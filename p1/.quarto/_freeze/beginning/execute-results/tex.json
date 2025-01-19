@@ -1,0 +1,17 @@
+{
+  "hash": "9f9ab7a957b09790e5f8c73182c7cdf1",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"beginning\"\nformat: pdf\n---\n\n::: {.cell}\n\n```{.r .cell-code}\nquadratic_function_solve <- function(a,b,c){\n  delta <- b^2 - 4 * a * c\n  if(delta > 0){\n    root1 <- (-b + sqrt(delta)) / (2 * a)\n    root2 <- (-b - sqrt(delta)) / (2 * a)\n    return(c(root1,root2))\n  }else if(delta == 0){\n    return((-b) / (2 * a))\n  }else{\n    return(\"Complex Solution\")\n  }\n}\na <- 1\nb <- -1\nc <- -2\nresult <- quadratic_function_solve(a,b,c)\nresult\n```\n\n::: {.cell-output .cell-output-stdout}\n\n```\n[1]  2 -1\n```\n\n\n:::\n:::\n\n::: {.cell}\n\n```{.r .cell-code}\nx <- seq(-5, 5, length = 100)\nf <- a * x^2 + b * x + c\na <- 1\nb <- -1\nc <- -2\nplot(x, f, type=\"l\")\nlines(x)\n```\n\n::: {.cell-output-display}\n![](beginning_files/figure-pdf/unnamed-chunk-2-1.pdf){fig-pos='H'}\n:::\n:::\n",
+    "supporting": [
+      "beginning_files\\figure-pdf"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": null,
+    "postProcess": false
+  }
+}

@@ -1,0 +1,15 @@
+"0","for (i in 1:3){"
+"0","  file.create(paste0(""../../results/results"", i, "".txt""))"
+"0","  coefs <- scan(paste0(""../../data/coefs"",i,"".txt""))"
+"0","  a <- coefs[1]"
+"0","  b <- coefs[2]"
+"0","  c <- coefs[3]"
+"0","  result <- quadratic_function_solve(a,b,c)"
+"0","  write(result,file = paste0(""../../results/results"", i, "".txt""))"
+"0","}"
+"2","Read 3 items
+"
+"2","Read 3 items
+"
+"2","Read 3 items
+"

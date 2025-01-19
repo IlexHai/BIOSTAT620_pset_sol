@@ -1,0 +1,36 @@
+---
+title: "beginning"
+format: pdf
+---
+
+
+```{r}
+quadratic_function_solve <- function(a,b,c){
+  delta <- b^2 - 4 * a * c
+  if(delta > 0){
+    root1 <- (-b + sqrt(delta)) / (2 * a)
+    root2 <- (-b - sqrt(delta)) / (2 * a)
+    return(c(root1,root2))
+  }else if(delta == 0){
+    return((-b) / (2 * a))
+  }else{
+    return("Complex Solution")
+  }
+}
+a <- 1
+b <- -1
+c <- -2
+result <- quadratic_function_solve(a,b,c)
+result
+```
+
+```{r}
+x <- seq(-5, 5, length = 100)
+f <- a * x^2 + b * x + c
+a <- 1
+b <- -1
+c <- -2
+plot(x, f, type="l")
+lines(x)
+```
+

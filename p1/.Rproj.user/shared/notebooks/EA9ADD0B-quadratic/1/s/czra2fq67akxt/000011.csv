@@ -1,0 +1,13 @@
+"0","coefs1 <- scan(""../../data/coefs1.txt"")"
+"2","Read 3 items
+"
+"0","a <- coefs1[1]"
+"0","b <- coefs1[2]"
+"0","c <- coefs1[3]"
+"0","result1 <- quadratic_function_solve(a,b,c)"
+"0","result1"
+"1","[1]"
+"1","  2"
+"1"," -1"
+"1","
+"
