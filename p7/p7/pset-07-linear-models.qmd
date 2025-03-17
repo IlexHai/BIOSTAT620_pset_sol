@@ -1,0 +1,272 @@
+---
+title: Problem set 7 
+date: 2025-03-16
+---
+
+1. Load the **HistData** package. Create a `galton_height` data with the father's height and one randomly selected daughter from each family. Exclude families with no female children. Set the seed at 2007 and use the function `sample_n` to select the random child. You should end up with a `heights` dataset with two columns: `father` and `daughter`.
+
+
+```{r}
+Sys.setlocale(category = "LC_ALL", "en_US.UTF-8")
+library(HistData)
+library(dplyr)
+names(GaltonFamilies)
+set.seed(2007)
+heights <- GaltonFamilies |> filter(any(gender == "female")) |>
+  filter(gender == "female") |>
+  group_by(family) |>
+  sample_n(1) |>
+  ungroup() |>
+  select(father, daughter = childHeight)
+
+```
+
+2. Estimate the intercept and slope of the regression line for predicting daughter height $Y$ using father height $X$. Use the following regression line formula:
+
+$$
+\frac{\hat{Y} - \mu_Y}{\sigma_Y} = \rho \frac{x - \mu_x}{\sigma_x} 
+$$
+
+```{r}
+## your code here
+mu_x <- mean(heights$father)
+mu_Y <- mean(heights$daughter)
+
+sigma_x <- sd(heights$father)
+sigma_Y <- sd(heights$daughter)
+
+rho <- cor(heights$father, heights$daughter)
+
+slope <- rho * sigma_Y / sigma_x
+intercept <- mu_Y - (rho * sigma_Y * mu_x / sigma_x)
+cat("Slope is:", slope, "\n")
+cat("Intercept is:", intercept)
+```
+
+3. Make a plot to confirm the regression line goes through the data.
+
+```{r}
+library(ggplot2)
+heights |> ggplot(aes(father, daughter)) + geom_point() + geom_abline(intercept = intercept, slope = slope) + labs(x = "Father's Height", y = "Daughter's Height", title = "Plot of Regression Line")
+```
+
+4. Recompute the slope and intercept coefficients, this time using `lm` and confirm you get the same answer as with the formula used in problem 2.
+
+```{r}
+## your code here
+lm <- lm(daughter ~ father, data = heights)
+lm_intercept <- coef(lm)[1]
+lm_slope <- coef(lm)[2]
+
+cat("The slope given by lm is:", lm_slope, "\n")
+cat("The intercept given by lm is:", lm_intercept, "\n")
+
+diff_slope <- slope - lm_slope
+diff_intercept <- intercept - lm_intercept
+cat("The difference of slope:", diff_slope, "\n")
+cat("The difference of intercept:", diff_intercept)
+```
+
+5. Note that the interpretation of the intercept is: the height prediction for the daughter whose father is 0 inches tall. This is not a very useful interpretation. Re-run the regression but instead of father height use inches above average for each father: instead of using the $x_i$s use $x_i - \bar{x}$. What is the interpretation of the intercept now? Does the slope estimate change?
+
+```{r}
+##your code here
+father_heights_average <- mean(heights$father)
+heights$heights_centered <- heights$father - father_heights_average
+
+lm_average <- lm(daughter ~ heights_centered, data = heights)
+lm_average_intercept <- coef(lm_average)[1]
+lm_average_slope <- coef(lm_average)[2]
+
+cat("The slope given by lm_average is:", lm_average_slope, "\n")
+cat("The intercept given by lm_average is:", lm_average_intercept)
+
+#The interpretation of the intercept is: The estimated heights for daughter when
+#her father is on the average height.
+#The slope estimate remains unchanged.
+```
+
+6. When using the centered father heights as a predictor, is the intercept the same as the average daughter height? Check if this is the case with the values you computed and then show that mathematically this has to be the case.
+
+```{r}
+##your code here
+daughter_heights_average <- mean(heights$daughter)
+
+cat("The intercept given by lm_average is:", lm_average_intercept, "\n")
+cat("The average daughter height:", daughter_heights_average, "\n")
+cat("The difference:", lm_average_intercept - daughter_heights_average)
+
+#The values are the same
+#mathematical proof is below:
+```
+$$
+Y_i = \beta_0 + \beta_1 (X_i - \bar{X}) \Rightarrow \\
+E[Y] = E[\beta_0 + \beta_1 (X - \bar{X})] = \beta_0 + \beta_1(E[X]-\bar{X}) = \beta_0 + \beta_1(\bar{X} - \bar{X}) = \beta_0
+$$
+For the next exercises install the **excessmort** package. For the latest version use
+
+```{r}
+#| eval: false
+library(devtools)
+install_github("rafalab/excessmort")
+```
+
+
+7. Define an object `counts` by wrangling `puerto_rico_counts` to 1) include data only from 2002-2017 and counts for people 60 or over. We will focus in this older subset throughout the rest of the problem set.
+
+```{r}
+library(excessmort)
+library(lubridate)
+agegroup_above60 <- c("60-64", "65-69", "70-74", "75-79", "80-84", "85-Inf")
+counts <- puerto_rico_counts |>
+  filter(year(date) >= 2002 & year(date) <= 2017, agegroup %in% agegroup_above60)
+```
+
+
+
+8. Use R to determine what day of the week María made landfall in PR (September 20, 2017).
+
+```{r}
+##your code here
+Maria_landfall_date <- as.Date("2017-09-20")
+date_of_week <- weekdays(Maria_landfall_date)
+cat("The day of the week Maria made landfall in PR is:", date_of_week)
+```
+
+
+10. Redefine the date column to be the start of the week that date is part of: in other words, round the date down to the nearest week. Use the day of the week María made landfall as the first day. So, for example, 2017-09-20, 2017-09-21, 2017-09-22 should all be rounded down to 2017-09-20, while 2017-09-19 should be rounded down to 2017-09-13. Save the resulting table in `weekly_counts`.
+
+
+```{r}
+##your code here
+first_day_of_week <- wday(Maria_landfall_date)
+weekly_counts <- counts |> mutate(date = date - days((wday(date) - wday(first_day_of_week))%%7))
+```
+
+11. Now collapse the `weekly_count` data frame to store only one mortality value for each week, for each `sex` and `agegroup`. To this by by redefining `outcome` to have the total deaths that week for each `sex` and `agegroup`. Remove weeks that have less the 7 days of data. Finally, add a column with the MMWR week. Name the resulting data frame `weekly_counts`. 
+
+```{r}
+##your code here
+library(MMWRweek)
+weekly_counts <- weekly_counts |> group_by(date, sex, agegroup) |>
+  summarise(outcome = sum(outcome, na.rm = TRUE),
+            population = sum(population),
+            days_in_week = n(),
+            .groups = "drop") |>
+  filter(days_in_week == 7) |>
+  mutate(MMWR_week = MMWRweek(date)$MMWRweek)
+  
+```
+
+
+12. Comparing mortality totals is often unfair because the two groups begin compared have different population sizes. It is particularly important we consider rates rather than totals in this dataset because the demographics in Puerto Rico changed dramatically in the last 20 years. To see this use `puerto_rico_counts` to plot the population sizes by age group and gender. Provide a two sentence description of what you see.
+
+```{r}
+puerto_rico_counts |> group_by(year = year(date), sex, agegroup) |>
+  summarise(population = mean(population), .groups = "drop") |>
+  ggplot(aes(x=year, y = population, color = sex)) + geom_line() + facet_wrap(~ agegroup, scale = "free_y") + labs(x = "Year", y = "Population", title = "Population Sizes by Age Group and Sex", color = "Sex")
+
+#The population size of younger (age 0-29) is decreasing from 1985 to 2020, and
+#the population of those aged 30-49 also began to decrese from some time points 
+#between 2000 and 2010.
+#The population size of the old, aged 60 or above, keeps increasing since 1985.
+```
+
+
+
+13. Make a boxplot for each MMWR week's mortality rate based on the 2002-2016 data. Each week has 15 data points, one for each year. Then add the 2017 data as red points. 
+
+
+```{r}
+###your code here
+weekly_2002_2016 <- weekly_counts |>
+  filter(year(date) >= 2002 & year(date) <= 2016) |>
+  group_by(MMWR_week,year = year(date)) |>
+  summarise(mortality_rate = sum(outcome) / sum(population), .groups = "drop")
+
+weekly_2017 <- weekly_counts |>
+  filter(year(date) == 2017) |>
+  group_by(MMWR_week) |>
+  summarise(mortality_rate = sum(outcome) / sum(population), .groups = "drop")
+
+ggplot(weekly_2002_2016, aes(x = factor(MMWR_week), y = mortality_rate)) + geom_boxplot(aes(group = MMWR_week)) + labs(x = "MMWR Week", y = "Mortality Rate", title = "MMWR Weeks's mortality rate 2002-2016") + geom_point(data = weekly_2017, aes(x = factor(MMWR_week), y = mortality_rate), color = "red")
+```
+
+
+14. Note two things: 1) there is a strong week effect and 2) 2017 is lower than expected. Plot the yearly rates (per 1,000)  for 2002-2016:
+
+```{r}
+weekly_counts |> 
+  filter(year(date) < 2017) |>
+  group_by(year = year(date)) |>
+  summarise(mortality_rate = sum(outcome) / sum(population) * 1000, .groups = "drop") |>
+  ggplot(aes(x = year, y = mortality_rate)) + geom_line() + geom_point() + labs(x = "Year", y = "Yearly Mortality Rate", title = "Yearly Mortality Rates 2002-2016")
+
+```
+
+15. The plot made in 14 explains why 2017 is below what is expected: there appears to be a general decrease in mortality with time. A possible explanation is that medical care is improving and people are living more healthy lives.
+
+Fit a linear model to the weekly data for the 65 and older to the 2002-2016 data that accounts for: 
+
+* A changing population.
+* The trend observed in 12.
+* The week effect.
+* Age effect.
+* A sex effect.
+
+Use rate as the outcome in the model.
+
+```{r}
+##your code here
+rate_2002_2016 <- weekly_counts |> 
+  filter(year(date) < 2017) |>
+  mutate(year = year(date),
+         rate = outcome / population)
+model <- lm(rate ~ year + factor(MMWR_week) + factor(sex) + factor(agegroup) + population, data = rate_2002_2016)
+summary(model)
+```
+
+
+16. Now obtain expected counts for the entire dataset, including 2017. Compute the difference between the observed count and expected count and plot the total excess death for each week. Construct a confidence interval for the excess mortality estimate for each week. Hint: use the `predict` function.
+
+```{r}
+##your code here
+rate_all <- weekly_counts |>
+  mutate(year = year(date),
+         rate = outcome / population,
+         MMWR_week = factor(MMWR_week),
+         agegroup = factor(agegroup),
+         sex = factor(sex))
+
+expected <- predict(model, newdata = rate_all, se.fit = TRUE)
+
+output <- rate_all |>
+  mutate(predicted_rate = expected$fit,
+         se = expected$se.fit,
+         expected_death = predicted_rate * population,
+         se_expected = se * population,
+         excess_death = outcome - expected_death)
+weekly_excess <- output |>
+  group_by(MMWR_week) |>
+  summarise(observed_deaths = sum(outcome),
+            expected_deaths = sum(expected_death),
+            weekly_excesses = sum(excess_death),
+            se_total = sqrt(sum(se_expected^2)),
+            .groups = "drop") |>
+  mutate(ci_lb = weekly_excesses - 1.96 * se_total,
+         ci_ub = weekly_excesses + 1.96 * se_total)
+
+```
+  
+17. Finally, plot the observed rates and predicted rates from the model for each `agegroup` and `sex`. Comment on how well the model fits and what you might do differently.
+
+```{r}
+##your code here
+library(tidyr)
+dat <- output |> pivot_longer(cols = c(rate, predicted_rate), names_to = "type", values_to = "rate")
+ggplot(dat, aes(x = date, y = rate, color = type)) + geom_line() + facet_grid(agegroup ~ sex, scales = "free_y") + labs(x = "Date", y = "Mortality Rate", title = "Mortatility Rates of Observed and Predicted")
+
+#The predictions is poor for groups age 70+, especially for male.
+#We may make some changes to the linear model, or try use a non-linear regression model.
+```
+
