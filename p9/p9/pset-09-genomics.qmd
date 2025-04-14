@@ -1,0 +1,262 @@
+---
+title: Problem set 9
+date: 2025-04-13
+---
+
+This problem set explores the analysis of high dimensional data in the application area of spatial transcriptomics. For reference, consult the following papers:
+
+* [Robust decomposition of cell type mixtures in spatial transcriptomics](https://www.nature.com/articles/s41587-021-00830-w)
+* [Cell type-specific inference of differential expression in spatial transcriptomics](https://www.nature.com/articles/s41592-022-01575-3)
+
+### Load in the data
+
+We begin by downloading the data. Hint: run this once and leave it as `eval = FALSE` in your script.
+
+```{r, eval = FALSE}
+# download data
+dir.create('data')
+file_list <- c('gene_counts', 'cell_coords', 'neuron_cells', 'other_cells',
+               'positive_genes', 'negative_genes', 'other_genes')
+for(filename in file_list) {
+  download.file(paste0('https://github.com/dmcable/BIOSTAT620/raw/main/data/p9/',filename,'.rds'), 
+                destfile = paste0('data/',filename,'.rds'))
+}
+```
+Next, we load in the data and packages (note that `counts` is a sparse matrix):
+
+```{r}
+# required packages
+library(ggplot2)
+library(Matrix)
+library(tidyverse)
+
+# load data
+counts <- readRDS('data/gene_counts.rds') # gene counts matrix
+coords <- readRDS('data/cell_coords.rds') # cell coords matrix
+
+neuron_cells <- readRDS('data/neuron_cells.rds') # list of neuron cell barcodes.
+other_cells <- readRDS('data/other_cells.rds') # list of non-neuron cell barcodes.
+
+positive_genes <- readRDS('data/positive_genes.rds') # list of genes specific for neurons
+negative_genes <- readRDS('data/negative_genes.rds') # list of genes specific for not neurons
+other_genes <- readRDS('data/other_genes.rds') # selected list of other genes
+
+all_genes <- c(positive_genes, negative_genes, other_genes) # all genes
+small_counts <- as.matrix(counts[all_genes, c(neuron_cells, other_cells)]) # subset of the counts
+```
+
+### Data visualization
+
+1. Begin by visualizing the coordinates of the cells in 2D space. Hint: this information is contained in the `coords` dataframe.
+
+```{r}
+set.seed(2025)
+### YOUR ANSWER HERE
+ggplot(coords, aes(x = coords[,1], y = coords[,2])) + geom_point(size = 0.6) + 
+labs(title = "Coordinates of the cells in 2D space", x = "x", y = "y")
+```
+
+2. Let's now visualize the expression of the Hpca gene, which is specific for neurons. Begin by creating a histogram of the counts of the gene. Hint: examine the `counts` matrix.
+
+```{r}
+### YOUR ANSWER HERE
+hpca <- counts["Hpca",]
+ggplot(data.frame(expression= hpca), aes(x = expression)) +geom_histogram() +
+  labs(title = "Histogram of Hpca Gene", x = "Hpca counts", y = "Frequency")
+```
+
+3. Make a spatial plot of the gene expression of this gene. Use the cell coordinates as the spatial coordinates, and use gene expression counts as the color. Set a maximum threshold for your color scale based on the histogram above.
+
+```{r}
+### YOUR ANSWER HERE
+data <- data.frame(
+  x = coords[,1],
+  y = coords[,2],
+  Hpca = as.numeric(counts["Hpca",])
+)
+threshold <- 50
+ggplot(data, aes(x = x, y = y, color = Hpca)) + geom_point(size = 0.6) + 
+  scale_color_gradient(low = "grey", high = "red", limit = c(0,threshold)) + 
+  labs(title = "Spatial plot of the gene expression of Hcpa", x = "X", y = "Y")
+```
+
+### Distance
+
+4. Now, make a spatial plot of the cell types. Create a dataframe `plot_df` containing only the neurons and the non-neurons. Plot the neurons and non-neurons as two different colors. Hint: the neuron barcodes are in `neuron_cells`, and the non-neuron barcodes are in `other_cells`. 
+
+```{r}
+### YOUR ANSWER HERE
+coords_neuron <- coords[neuron_cells,]
+coords_nonneuron <- coords[other_cells,]
+coords_neuron$cell_type <- "Neurons"
+coords_nonneuron$cell_type <- "Non-Neurons"
+plot_df <- rbind(coords_neuron,coords_nonneuron)
+ggplot(plot_df, aes(x = x, y = y, color = cell_type)) + geom_point(size = 0.6) +
+  scale_color_manual(values = c("Neurons" = "blue", "Non-Neurons" = "red")) +
+  labs(title = "Spatial plot of cell types", x = "X", y = "Y", color = "Cell types")
+```
+
+5. Using only the cells selected above in `plot_df`, compute the distance matrix pairwise between each cell (hint: use `rdist` from `fields`). and compute the k-nearest-neighbors with `K = 25` (hint use `get.knn` from `FNN`). Choose the first cell, and visualize the spatial locations of the k nearest neighbors relative to that cell.
+
+```{r}
+### YOUR ANSWER HERE
+library(FNN)
+library(fields)
+cell_coord <- as.matrix(plot_df[,1:2])
+distance_matrix <- rdist(cell_coord)
+knn_25 <- get.knn(distance_matrix, k = 25)
+first_cell_neighbor <- knn_25$nn.index[1,]
+plot_df$classification <- factor(
+  ifelse(1:nrow(plot_df) == 1, "First cell",
+         ifelse(1:nrow(plot_df) %in% first_cell_neighbor, "First cell neighbors",
+         "Other")),
+  levels = c("First cell", "First cell neighbors", "Other")
+)
+
+ggplot(plot_df, aes(x = x, y = y, color = classification)) + geom_point(size = 0.6) +
+  scale_color_manual(values = c("First cell" = "red", "First cell neighbors" = "pink", "Other" = "grey")) + labs(title = "Spatial locations of the 25 nearest neighbors",
+                           x = "X", y = "Y", color = "Classification")
+```
+
+6. For each cell, calculate the proportion of neighbors that are neurons, and visualize these proportions spatially. 
+
+```{r}
+### YOUR ANSWER HERE
+neighbor <- get.knn(distance_matrix, k = 25)$nn.index
+plot_df$proportion <- apply(neighbor, 1, function(i)
+  mean(plot_df$cell_type[i] == "Neurons"))
+
+ggplot(plot_df, aes(x = x, y = y, color = proportion)) + geom_point(size = 0.6) + 
+  scale_color_gradient(low = "grey", high = "red",limits = c(0,1)) + 
+  labs(title = "proportion of neighbors are neurons", x = "X", y = "Y")
+```
+
+### Smoothing
+
+7. Using `loess`, fit a 2D spatial smoothing function to the neuron proportion values. Use `degree = 1` and `span = 0.05`. Create a spatial plot with the color as the smooth fit. 
+
+```{r}
+### YOUR ANSWER HERE
+fit <- loess(proportion ~ x + y, data = plot_df, degree = 1, span = 0.05)
+plot_df$smooth_fit <- predict(fit)
+ggplot(plot_df, aes(x = x, y = y, color = smooth_fit)) + geom_point(size = 0.6) +
+  scale_color_gradient(low = "grey", high = "red", limits = c(0,1)) + 
+  labs(title = "spatial plot of smoothed neuron proportion", x = "X", y = "Y")
+```
+
+8. Visualize a 1-dimensional section of the smooth function. Filter for `y` within `50` of `3000`. Plot both the proportion and the fitted smooth values in two separate colors.
+
+```{r}
+### YOUR ANSWER HERE
+filtered <- plot_df |>
+  filter(y >= 2950 & y <= 3050)
+ggplot(filtered, aes(x = x)) + geom_point(aes(y = proportion), color = "black") +
+  geom_line(aes(y = smooth_fit), color = "red") + 
+  labs(title = "1-D plot of proportion and smoothed proportion", x = "X", y = "Y")
+```
+
+### Dimension reduction
+
+9. Using a subset of the counts (`small_counts`), perform a PCA (hint: use `prcomp`). Plot the first principal component (hint: check the `x` variable of the `prcomp` object) vs the total cellular count.  
+
+```{r}
+### YOUR ANSWER HERE
+total_cellular_count <- colSums(small_counts)
+pca <- prcomp(t(small_counts), scale. = TRUE)
+pca_df <- data.frame(PC1 = pca$x[,1],TotalCount = total_cellular_count)
+
+ggplot(pca_df, aes(x = PC1, y = TotalCount)) + geom_point(size = 0.6) + 
+  labs(title = "First PC vs Total Cellular Count", x = "PC1", y = "Total Cellular Count")
+```
+Comment on your finding:
+
+The PC1 is strongly negative correlated with the Total Cellular Count. Cells with higher total count have lower PC1 value.
+
+10. To mitigate this issue, we will normalize `small_counts` by dividing each cell by the sum of the total counts. Hint: use the `sweep` function. Repeate the PCA with the normalized count matrix. Make a plot of percent of variance explained for each of the first 500 PCs (threshold this plot at 5% variance explained). 
+
+```{r}
+### YOUR ANSWER HERE
+normalized_count_matrix <- sweep(small_counts, 2, colSums(small_counts), FUN = "/")
+pca_normalized <- prcomp(t(normalized_count_matrix), scale. = TRUE)
+variance_explained <- pca_normalized$sdev^2 / sum(pca_normalized$sdev^2)
+variance_df <- data.frame(PC = 1:length(variance_explained), var_explained = variance_explained)
+ggplot(variance_df[1:500,], aes(x = PC, y = var_explained)) + geom_point(size = 0.5) +
+  geom_line() + scale_y_continuous(limits = c(0,0.05)) + 
+  labs(title = "Percent of variance explained for first 500 PCs",
+                     x = "PC", y = "Variance explained")
+```
+
+11. Make spatial plots visualizing the first four PCs in spatial coordinates.
+
+```{r}
+### YOUR ANSWER HERE
+pca_first4 <- pca_normalized$x[,1:4]
+pca_4_df <- as.data.frame(pca_first4)
+coords_sub <- coords[colnames(small_counts),]
+pca_coord <- cbind(coords_sub, pca_4_df)
+pc1 <- ggplot(pca_coord, aes(x = x, y = y, color = PC1)) + geom_point(size = 0.6) +
+  scale_color_gradient2(low = "blue", mid = "grey", high = "red", 
+                       limits = c(-max(abs(pca_coord$PC1)), max(abs(pca_coord$PC1)))) + labs(title = "Spatial plots of PC1", x = "X", y = "Y")
+pc2 <- ggplot(pca_coord, aes(x = x, y = y, color = PC2)) + geom_point(size = 0.6) +
+  scale_color_gradient2(low = "blue", mid = "grey", high = "red", 
+                       limits = c(-max(abs(pca_coord$PC2)), max(abs(pca_coord$PC2)))) + labs(title = "Spatial plots of PC2", x = "X", y = "Y")
+pc3 <- ggplot(pca_coord, aes(x = x, y = y, color = PC3)) + geom_point(size = 0.6) +
+  scale_color_gradient2(low = "blue", mid = "grey", high = "red", 
+                       limits = c(-max(abs(pca_coord$PC3)), max(abs(pca_coord$PC3)))) + labs(title = "Spatial plots of PC3", x = "X", y = "Y")
+pc4 <- ggplot(pca_coord, aes(x = x, y = y, color = PC4)) + geom_point(size = 0.6) +
+  scale_color_gradient2(low = "blue", mid = "grey", high = "red", 
+                       limits = c(-max(abs(pca_coord$PC4)), max(abs(pca_coord$PC4)))) + labs(title = "Spatial plots of PC4", x = "X", y = "Y")
+pc1
+pc2
+pc3
+pc4
+```
+
+12. For the first 20 pcs, compute the average weight for each of the following sets of genes: `positive_genes`, `negative_genes`, and `other_genes`. Create a `geom_point` plot of these with PC index as the x-axis, average weight as the y axis, and gene list type as the color.
+
+```{r}
+### YOUR ANSWER HERE
+pca_first20 <- pca_normalized$x[,1:20]
+pca_first20_rotation <- pca_normalized$rotation[,1:20]
+gene_set <- list(
+  Positive = positive_genes,
+  Negative = negative_genes,
+  Other = other_genes
+)
+average_weight <- lapply(names(gene_set), function(name){
+  genes <- intersect(gene_set[[name]], rownames(pca_first20_rotation))
+  data.frame(PC_index = 1:20, 
+             average_weight = colMeans(pca_first20_rotation[genes,]), 
+             set_name = name)
+}) |>
+  bind_rows()
+ggplot(average_weight, aes(x = PC_index, y = average_weight, color = set_name)) + geom_point() + geom_line() + labs(title = "Average weight for three sets of genes", x = "PC index", y = "Average Weight")
+```
+
+13. Now, remake the previous plot for the first five PCs and include standard error bars.
+
+```{r}
+### YOUR ANSWER HERE
+pca_first5 <- pca_normalized$x[,1:5]
+pca_first5_rotation <- pca_normalized$rotation[,1:5]
+
+average_weight_5 <- lapply(names(gene_set), function(name){
+  genes <- intersect(gene_set[[name]], rownames(pca_first5_rotation))
+  data.frame(PC_index = rep(1:5, each = length(genes)), 
+             weight = as.vector(pca_first5_rotation[genes,]), 
+             set_name = name) |>
+  group_by(PC_index, set_name) |>
+  summarise(average_weight = mean(weight),
+            se = sd(weight)/sqrt(n()),
+            .groups = "drop")
+}) |>
+  bind_rows()
+ggplot(average_weight_5, aes(x = PC_index, y = average_weight, color = set_name)) + geom_point() + geom_line() + geom_errorbar(aes(ymin = average_weight - se, ymax = average_weight + se)) + labs(title = "Average weight for three sets of genes", x = "PC index", y = "Average Weight")
+```
+
+
+Which of the first 5 PCs appear to have statistically significant differences across gene types?
+
+YOUR SHORT ANSWER HERE
+
+PC1 appear to have statistically significant differences across gene types.
