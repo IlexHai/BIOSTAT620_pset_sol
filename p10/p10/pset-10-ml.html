@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-04-20">
+
+<title>Problem set 10</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="pset-10-ml_files/libs/clipboard/clipboard.min.js"></script>
+<script src="pset-10-ml_files/libs/quarto-html/quarto.js"></script>
+<script src="pset-10-ml_files/libs/quarto-html/popper.min.js"></script>
+<script src="pset-10-ml_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="pset-10-ml_files/libs/quarto-html/anchor.min.js"></script>
+<link href="pset-10-ml_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="pset-10-ml_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="pset-10-ml_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="pset-10-ml_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="pset-10-ml_files/libs/bootstrap/bootstrap-8a79a254b8e706d3c925cde0a310d4f0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Problem set 10</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 20, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The data for this problem set is provided by this link: <code>https://github.com/dmcable/BIOSTAT620/raw/refs/heads/main/data/pset-10-mnist.rds</code></p>
+<p>Read this object into R. For example, you can use:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(<span class="st">"https://github.com/dmcable/BIOSTAT620/raw/refs/heads/main/data/pset-10-mnist.rds"</span>, fn)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(fn)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">file.remove</span>(fn)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+<p>The object is a list with two components <code>dat$train</code> and <code>dat$test</code>. Use the data in <code>dat$train</code> to develop a machine learning algorithms to predict the labels for the images in the <code>dat$test$images</code> component.</p>
+<p>Save the your predicted labels in an object called <code>digit_predictions</code>. This should be a vector of integers with length <code>nrow(dat$test$images)</code>. It is important that the <code>digit_predictions</code> is ordered to match the rows of <code>dat$test$images</code>.</p>
+<p>Save the object to a file called <code>digit_predictions.rds</code> using:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(randomForest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: 程序包'randomForest'是用R版本4.4.3 来建造的</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>randomForest 4.7-1.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Type rfNews() to see new features/changes/bug fixes.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#get a validation set</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>train_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(dat<span class="sc">$</span>train<span class="sc">$</span>images), <span class="at">size =</span> <span class="fl">0.8</span> <span class="sc">*</span> <span class="fu">nrow</span>(dat<span class="sc">$</span>train<span class="sc">$</span>images))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>X_train_baseline <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>images[train_idx, ]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>y_train_baseline <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(dat<span class="sc">$</span>train<span class="sc">$</span>labels[train_idx])</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>X_valid_baseline <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>images[<span class="sc">-</span>train_idx, ]</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>y_valid_baseline <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>labels[<span class="sc">-</span>train_idx]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>rf_model_baseline <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(<span class="at">x =</span> X_train_baseline, <span class="at">y =</span> y_train_baseline, <span class="at">ntree =</span> <span class="dv">100</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>valid_preds_baseline <span class="ot">&lt;-</span> <span class="fu">predict</span>(rf_model_baseline, X_valid_baseline)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>accuracy_baseline <span class="ot">&lt;-</span> <span class="fu">mean</span>(valid_preds_baseline <span class="sc">==</span> y_valid_baseline)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Validation Accuracy:"</span>, <span class="fu">round</span>(accuracy_baseline <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>), <span class="st">"%</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Validation Accuracy: 96.8 %</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#the baseline(only random forest) model has an accuracy of 96.8% on the validation set.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>zero_variance_columns <span class="ot">&lt;-</span> <span class="fu">apply</span>(dat<span class="sc">$</span>train<span class="sc">$</span>images, <span class="dv">2</span>, <span class="cf">function</span>(col) <span class="fu">var</span>(col) <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>X_train_nonzero <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>images[,<span class="sc">!</span>zero_variance_columns]</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>X_test_nonzero <span class="ot">&lt;-</span> dat<span class="sc">$</span>test<span class="sc">$</span>images[,<span class="sc">!</span>zero_variance_columns]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(X_train_nonzero, <span class="at">center =</span> <span class="cn">TRUE</span>, <span class="at">scale. =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(pca)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Importance of components:
+                           PC1     PC2     PC3     PC4    PC5     PC6    PC7
+Standard deviation     6.36741 5.38809 5.18620 4.56129 4.2469 3.96832 3.7191
+Proportion of Variance 0.05686 0.04072 0.03772 0.02918 0.0253 0.02209 0.0194
+Cumulative Proportion  0.05686 0.09758 0.13530 0.16448 0.1898 0.21187 0.2313
+                           PC8     PC9    PC10    PC11   PC12    PC13   PC14
+Standard deviation     3.53329 3.31941 3.17857 3.11679 2.9369 2.82834 2.8009
+Proportion of Variance 0.01751 0.01545 0.01417 0.01362 0.0121 0.01122 0.0110
+Cumulative Proportion  0.24878 0.26423 0.27840 0.29202 0.3041 0.31534 0.3263
+                          PC15    PC16    PC17    PC18    PC19    PC20   PC21
+Standard deviation     2.72806 2.68234 2.58716 2.57249 2.52861 2.49382 2.4329
+Proportion of Variance 0.01044 0.01009 0.00939 0.00928 0.00897 0.00872 0.0083
+Cumulative Proportion  0.33678 0.34687 0.35626 0.36554 0.37451 0.38323 0.3915
+                          PC22    PC23    PC24    PC25    PC26   PC27    PC28
+Standard deviation     2.39704 2.34087 2.31369 2.26822 2.22550 2.2178 2.17381
+Proportion of Variance 0.00806 0.00769 0.00751 0.00722 0.00695 0.0069 0.00663
+Cumulative Proportion  0.39959 0.40728 0.41478 0.42200 0.42895 0.4359 0.44247
+                          PC29    PC30   PC31    PC32    PC33    PC34    PC35
+Standard deviation     2.12450 2.10076 2.0850 2.05496 2.02269 2.00700 1.99282
+Proportion of Variance 0.00633 0.00619 0.0061 0.00592 0.00574 0.00565 0.00557
+Cumulative Proportion  0.44880 0.45499 0.4611 0.46701 0.47275 0.47840 0.48397
+                         PC36    PC37   PC38    PC39    PC40   PC41    PC42
+Standard deviation     1.9620 1.94593 1.9251 1.91648 1.85474 1.8502 1.83794
+Proportion of Variance 0.0054 0.00531 0.0052 0.00515 0.00482 0.0048 0.00474
+Cumulative Proportion  0.4894 0.49468 0.4999 0.50503 0.50985 0.5147 0.51939
+                          PC43    PC44    PC45    PC46   PC47    PC48    PC49
+Standard deviation     1.81857 1.78943 1.78526 1.78309 1.7720 1.76231 1.75619
+Proportion of Variance 0.00464 0.00449 0.00447 0.00446 0.0044 0.00436 0.00433
+Cumulative Proportion  0.52403 0.52852 0.53299 0.53745 0.5419 0.54621 0.55054
+                          PC50    PC51    PC52    PC53    PC54    PC55    PC56
+Standard deviation     1.73655 1.70403 1.69854 1.68436 1.67034 1.65601 1.64792
+Proportion of Variance 0.00423 0.00407 0.00405 0.00398 0.00391 0.00385 0.00381
+Cumulative Proportion  0.55477 0.55884 0.56289 0.56686 0.57078 0.57462 0.57843
+                         PC57    PC58    PC59    PC60    PC61    PC62    PC63
+Standard deviation     1.6252 1.61603 1.60643 1.58816 1.57755 1.57081 1.56094
+Proportion of Variance 0.0037 0.00366 0.00362 0.00354 0.00349 0.00346 0.00342
+Cumulative Proportion  0.5821 0.58580 0.58942 0.59296 0.59645 0.59991 0.60333
+                         PC64    PC65    PC66    PC67   PC68    PC69    PC70
+Standard deviation     1.5560 1.54705 1.54291 1.51875 1.5115 1.50774 1.49367
+Proportion of Variance 0.0034 0.00336 0.00334 0.00324 0.0032 0.00319 0.00313
+Cumulative Proportion  0.6067 0.61008 0.61342 0.61665 0.6199 0.62304 0.62617
+                          PC71    PC72    PC73    PC74    PC75    PC76    PC77
+Standard deviation     1.49230 1.48377 1.47436 1.47255 1.46112 1.45536 1.45047
+Proportion of Variance 0.00312 0.00309 0.00305 0.00304 0.00299 0.00297 0.00295
+Cumulative Proportion  0.62930 0.63238 0.63543 0.63847 0.64147 0.64444 0.64739
+                          PC78    PC79    PC80    PC81    PC82    PC83    PC84
+Standard deviation     1.44686 1.44316 1.43245 1.42689 1.42024 1.41516 1.41453
+Proportion of Variance 0.00294 0.00292 0.00288 0.00286 0.00283 0.00281 0.00281
+Cumulative Proportion  0.65033 0.65325 0.65612 0.65898 0.66181 0.66462 0.66742
+                          PC85    PC86    PC87    PC88   PC89    PC90    PC91
+Standard deviation     1.41031 1.40785 1.39815 1.39271 1.3887 1.38326 1.37981
+Proportion of Variance 0.00279 0.00278 0.00274 0.00272 0.0027 0.00268 0.00267
+Cumulative Proportion  0.67021 0.67299 0.67574 0.67846 0.6812 0.68384 0.68651
+                          PC92    PC93    PC94    PC95    PC96    PC97    PC98
+Standard deviation     1.37573 1.36904 1.36667 1.35094 1.34727 1.34574 1.33921
+Proportion of Variance 0.00265 0.00263 0.00262 0.00256 0.00255 0.00254 0.00252
+Cumulative Proportion  0.68917 0.69180 0.69442 0.69698 0.69952 0.70206 0.70458
+                         PC99   PC100   PC101   PC102  PC103  PC104   PC105
+Standard deviation     1.3338 1.32805 1.31412 1.31124 1.3082 1.3075 1.29460
+Proportion of Variance 0.0025 0.00247 0.00242 0.00241 0.0024 0.0024 0.00235
+Cumulative Proportion  0.7071 0.70955 0.71197 0.71438 0.7168 0.7192 0.72153
+                        PC106   PC107   PC108   PC109   PC110   PC111   PC112
+Standard deviation     1.2813 1.27782 1.27533 1.26585 1.26021 1.25677 1.24459
+Proportion of Variance 0.0023 0.00229 0.00228 0.00225 0.00223 0.00222 0.00217
+Cumulative Proportion  0.7238 0.72612 0.72840 0.73065 0.73288 0.73509 0.73727
+                         PC113   PC114  PC115   PC116   PC117   PC118   PC119
+Standard deviation     1.23891 1.23756 1.2248 1.22031 1.21841 1.21226 1.20389
+Proportion of Variance 0.00215 0.00215 0.0021 0.00209 0.00208 0.00206 0.00203
+Cumulative Proportion  0.73942 0.74157 0.7437 0.74576 0.74784 0.74990 0.75193
+                        PC120   PC121   PC122   PC123   PC124   PC125  PC126
+Standard deviation     1.1944 1.19235 1.18789 1.18399 1.17453 1.17190 1.1630
+Proportion of Variance 0.0020 0.00199 0.00198 0.00197 0.00193 0.00193 0.0019
+Cumulative Proportion  0.7539 0.75593 0.75791 0.75987 0.76181 0.76374 0.7656
+                         PC127   PC128   PC129   PC130   PC131   PC132   PC133
+Standard deviation     1.16127 1.15472 1.14308 1.14217 1.14084 1.13510 1.13117
+Proportion of Variance 0.00189 0.00187 0.00183 0.00183 0.00183 0.00181 0.00179
+Cumulative Proportion  0.76752 0.76939 0.77123 0.77306 0.77488 0.77669 0.77848
+                         PC134   PC135   PC136   PC137   PC138  PC139   PC140
+Standard deviation     1.12841 1.12346 1.11830 1.10581 1.10431 1.1015 1.09837
+Proportion of Variance 0.00179 0.00177 0.00175 0.00172 0.00171 0.0017 0.00169
+Cumulative Proportion  0.78027 0.78204 0.78379 0.78551 0.78722 0.7889 0.79061
+                         PC141   PC142   PC143   PC144   PC145   PC146   PC147
+Standard deviation     1.09593 1.08637 1.08089 1.07873 1.07218 1.06593 1.05767
+Proportion of Variance 0.00168 0.00166 0.00164 0.00163 0.00161 0.00159 0.00157
+Cumulative Proportion  0.79230 0.79395 0.79559 0.79722 0.79884 0.80043 0.80200
+                         PC148   PC149   PC150   PC151   PC152  PC153   PC154
+Standard deviation     1.05690 1.05365 1.05005 1.04367 1.04220 1.0341 1.03164
+Proportion of Variance 0.00157 0.00156 0.00155 0.00153 0.00152 0.0015 0.00149
+Cumulative Proportion  0.80356 0.80512 0.80667 0.80820 0.80972 0.8112 0.81271
+                         PC155   PC156   PC157   PC158   PC159   PC160   PC161
+Standard deviation     1.02554 1.02098 1.01496 1.01384 1.00866 1.00759 1.00144
+Proportion of Variance 0.00148 0.00146 0.00144 0.00144 0.00143 0.00142 0.00141
+Cumulative Proportion  0.81419 0.81565 0.81709 0.81854 0.81996 0.82139 0.82279
+                        PC162  PC163  PC164   PC165   PC166   PC167   PC168
+Standard deviation     1.0003 0.9999 0.9985 0.99710 0.99505 0.98888 0.98696
+Proportion of Variance 0.0014 0.0014 0.0014 0.00139 0.00139 0.00137 0.00137
+Cumulative Proportion  0.8242 0.8256 0.8270 0.82839 0.82978 0.83115 0.83252
+                         PC169   PC170   PC171   PC172   PC173  PC174   PC175
+Standard deviation     0.98583 0.98046 0.97361 0.96886 0.96635 0.9627 0.95935
+Proportion of Variance 0.00136 0.00135 0.00133 0.00132 0.00131 0.0013 0.00129
+Cumulative Proportion  0.83388 0.83523 0.83656 0.83787 0.83918 0.8405 0.84177
+                         PC176   PC177   PC178   PC179   PC180   PC181   PC182
+Standard deviation     0.95669 0.95235 0.94549 0.93908 0.93531 0.93072 0.92892
+Proportion of Variance 0.00128 0.00127 0.00125 0.00124 0.00123 0.00121 0.00121
+Cumulative Proportion  0.84306 0.84433 0.84558 0.84682 0.84805 0.84926 0.85047
+                         PC183  PC184   PC185   PC186   PC187   PC188   PC189
+Standard deviation     0.92754 0.9260 0.92204 0.92045 0.91356 0.90894 0.90406
+Proportion of Variance 0.00121 0.0012 0.00119 0.00119 0.00117 0.00116 0.00115
+Cumulative Proportion  0.85168 0.8529 0.85407 0.85526 0.85643 0.85759 0.85874
+                         PC190   PC191   PC192   PC193   PC194   PC195   PC196
+Standard deviation     0.90309 0.90126 0.89900 0.89370 0.89044 0.87971 0.87553
+Proportion of Variance 0.00114 0.00114 0.00113 0.00112 0.00111 0.00109 0.00108
+Cumulative Proportion  0.85988 0.86102 0.86216 0.86328 0.86439 0.86547 0.86655
+                         PC197   PC198   PC199   PC200   PC201   PC202   PC203
+Standard deviation     0.86817 0.86586 0.86408 0.86253 0.85930 0.85235 0.84915
+Proportion of Variance 0.00106 0.00105 0.00105 0.00104 0.00104 0.00102 0.00101
+Cumulative Proportion  0.86761 0.86866 0.86970 0.87075 0.87178 0.87280 0.87381
+                         PC204  PC205   PC206   PC207   PC208   PC209   PC210
+Standard deviation     0.84693 0.8434 0.83706 0.83594 0.83108 0.83008 0.82403
+Proportion of Variance 0.00101 0.0010 0.00098 0.00098 0.00097 0.00097 0.00095
+Cumulative Proportion  0.87482 0.8758 0.87680 0.87778 0.87875 0.87971 0.88067
+                         PC211   PC212   PC213   PC214   PC215   PC216  PC217
+Standard deviation     0.81998 0.81891 0.81382 0.81019 0.80556 0.80497 0.8007
+Proportion of Variance 0.00094 0.00094 0.00093 0.00092 0.00091 0.00091 0.0009
+Cumulative Proportion  0.88161 0.88255 0.88348 0.88440 0.88531 0.88622 0.8871
+                         PC218   PC219   PC220   PC221   PC222   PC223   PC224
+Standard deviation     0.79762 0.79446 0.78955 0.78614 0.78323 0.77962 0.77621
+Proportion of Variance 0.00089 0.00089 0.00087 0.00087 0.00086 0.00085 0.00085
+Cumulative Proportion  0.88801 0.88890 0.88977 0.89064 0.89150 0.89235 0.89319
+                         PC225   PC226   PC227   PC228   PC229  PC230   PC231
+Standard deviation     0.77244 0.76615 0.76587 0.76245 0.76004 0.7561 0.74986
+Proportion of Variance 0.00084 0.00082 0.00082 0.00082 0.00081 0.0008 0.00079
+Cumulative Proportion  0.89403 0.89485 0.89568 0.89649 0.89730 0.8981 0.89889
+                         PC232   PC233   PC234   PC235   PC236   PC237   PC238
+Standard deviation     0.74908 0.74381 0.74187 0.73791 0.73506 0.72783 0.72486
+Proportion of Variance 0.00079 0.00078 0.00077 0.00076 0.00076 0.00074 0.00074
+Cumulative Proportion  0.89968 0.90046 0.90123 0.90199 0.90275 0.90349 0.90423
+                         PC239   PC240   PC241   PC242   PC243  PC244   PC245
+Standard deviation     0.72258 0.72084 0.71779 0.71579 0.71074 0.7045 0.70068
+Proportion of Variance 0.00073 0.00073 0.00072 0.00072 0.00071 0.0007 0.00069
+Cumulative Proportion  0.90496 0.90569 0.90641 0.90713 0.90784 0.9085 0.90923
+                         PC246   PC247   PC248   PC249   PC250   PC251   PC252
+Standard deviation     0.70010 0.69955 0.69619 0.69316 0.69160 0.68645 0.68523
+Proportion of Variance 0.00069 0.00069 0.00068 0.00067 0.00067 0.00066 0.00066
+Cumulative Proportion  0.90991 0.91060 0.91128 0.91195 0.91262 0.91328 0.91394
+                         PC253   PC254   PC255   PC256   PC257   PC258   PC259
+Standard deviation     0.67768 0.67559 0.67536 0.67361 0.67180 0.66818 0.66440
+Proportion of Variance 0.00064 0.00064 0.00064 0.00064 0.00063 0.00063 0.00062
+Cumulative Proportion  0.91459 0.91523 0.91587 0.91650 0.91714 0.91776 0.91838
+                         PC260   PC261   PC262  PC263   PC264   PC265   PC266
+Standard deviation     0.66305 0.65988 0.65890 0.6532 0.64853 0.64685 0.64240
+Proportion of Variance 0.00062 0.00061 0.00061 0.0006 0.00059 0.00059 0.00058
+Cumulative Proportion  0.91900 0.91961 0.92022 0.9208 0.92141 0.92199 0.92257
+                         PC267   PC268   PC269   PC270   PC271   PC272   PC273
+Standard deviation     0.63796 0.63705 0.63433 0.63296 0.62889 0.62664 0.62458
+Proportion of Variance 0.00057 0.00057 0.00056 0.00056 0.00055 0.00055 0.00055
+Cumulative Proportion  0.92314 0.92371 0.92428 0.92484 0.92539 0.92594 0.92649
+                         PC274   PC275   PC276   PC277   PC278   PC279   PC280
+Standard deviation     0.62141 0.61817 0.61721 0.61564 0.61353 0.61052 0.60859
+Proportion of Variance 0.00054 0.00054 0.00053 0.00053 0.00053 0.00052 0.00052
+Cumulative Proportion  0.92703 0.92757 0.92810 0.92863 0.92916 0.92968 0.93020
+                         PC281   PC282  PC283  PC284  PC285   PC286   PC287
+Standard deviation     0.60612 0.60161 0.5987 0.5978 0.5946 0.59293 0.59030
+Proportion of Variance 0.00052 0.00051 0.0005 0.0005 0.0005 0.00049 0.00049
+Cumulative Proportion  0.93072 0.93123 0.9317 0.9322 0.9327 0.93322 0.93371
+                         PC288   PC289   PC290   PC291   PC292   PC293   PC294
+Standard deviation     0.58853 0.58812 0.58365 0.58231 0.57987 0.57751 0.57572
+Proportion of Variance 0.00049 0.00049 0.00048 0.00048 0.00047 0.00047 0.00046
+Cumulative Proportion  0.93419 0.93468 0.93516 0.93563 0.93610 0.93657 0.93704
+                         PC295   PC296   PC297   PC298   PC299   PC300   PC301
+Standard deviation     0.57128 0.56811 0.56643 0.56601 0.56368 0.55955 0.55718
+Proportion of Variance 0.00046 0.00045 0.00045 0.00045 0.00045 0.00044 0.00044
+Cumulative Proportion  0.93749 0.93795 0.93840 0.93885 0.93929 0.93973 0.94017
+                         PC302   PC303   PC304   PC305   PC306   PC307   PC308
+Standard deviation     0.55557 0.55411 0.55144 0.54770 0.54598 0.54174 0.54036
+Proportion of Variance 0.00043 0.00043 0.00043 0.00042 0.00042 0.00041 0.00041
+Cumulative Proportion  0.94060 0.94103 0.94146 0.94188 0.94230 0.94271 0.94312
+                         PC309  PC310  PC311  PC312   PC313   PC314   PC315
+Standard deviation     0.53782 0.5363 0.5341 0.5326 0.52910 0.52684 0.52571
+Proportion of Variance 0.00041 0.0004 0.0004 0.0004 0.00039 0.00039 0.00039
+Cumulative Proportion  0.94352 0.9439 0.9443 0.9447 0.94512 0.94551 0.94589
+                         PC316   PC317   PC318   PC319   PC320   PC321   PC322
+Standard deviation     0.52358 0.52087 0.51953 0.51839 0.51801 0.51662 0.51467
+Proportion of Variance 0.00038 0.00038 0.00038 0.00038 0.00038 0.00037 0.00037
+Cumulative Proportion  0.94628 0.94666 0.94704 0.94741 0.94779 0.94816 0.94854
+                         PC323   PC324   PC325   PC326   PC327   PC328   PC329
+Standard deviation     0.51343 0.51144 0.51018 0.50803 0.50565 0.50299 0.50142
+Proportion of Variance 0.00037 0.00037 0.00037 0.00036 0.00036 0.00035 0.00035
+Cumulative Proportion  0.94891 0.94927 0.94964 0.95000 0.95036 0.95071 0.95107
+                         PC330   PC331   PC332   PC333   PC334   PC335   PC336
+Standard deviation     0.50060 0.49956 0.49752 0.49487 0.48995 0.48949 0.48610
+Proportion of Variance 0.00035 0.00035 0.00035 0.00034 0.00034 0.00034 0.00033
+Cumulative Proportion  0.95142 0.95177 0.95211 0.95246 0.95279 0.95313 0.95346
+                         PC337   PC338   PC339   PC340   PC341   PC342   PC343
+Standard deviation     0.48481 0.48156 0.47948 0.47781 0.47673 0.47348 0.47224
+Proportion of Variance 0.00033 0.00033 0.00032 0.00032 0.00032 0.00031 0.00031
+Cumulative Proportion  0.95379 0.95412 0.95444 0.95476 0.95508 0.95539 0.95571
+                         PC344   PC345  PC346  PC347  PC348  PC349  PC350
+Standard deviation     0.47082 0.47033 0.4661 0.4658 0.4639 0.4635 0.4630
+Proportion of Variance 0.00031 0.00031 0.0003 0.0003 0.0003 0.0003 0.0003
+Cumulative Proportion  0.95602 0.95633 0.9566 0.9569 0.9572 0.9575 0.9578
+                        PC351  PC352   PC353   PC354   PC355   PC356   PC357
+Standard deviation     0.4616 0.4603 0.45715 0.45618 0.45572 0.45465 0.45166
+Proportion of Variance 0.0003 0.0003 0.00029 0.00029 0.00029 0.00029 0.00029
+Cumulative Proportion  0.9581 0.9584 0.95873 0.95902 0.95931 0.95960 0.95989
+                         PC358   PC359   PC360   PC361   PC362   PC363   PC364
+Standard deviation     0.45079 0.44910 0.44810 0.44734 0.44500 0.44337 0.43889
+Proportion of Variance 0.00029 0.00028 0.00028 0.00028 0.00028 0.00028 0.00027
+Cumulative Proportion  0.96017 0.96046 0.96074 0.96102 0.96130 0.96157 0.96184
+                         PC365   PC366   PC367   PC368   PC369   PC370   PC371
+Standard deviation     0.43779 0.43599 0.43440 0.43256 0.43116 0.42894 0.42726
+Proportion of Variance 0.00027 0.00027 0.00026 0.00026 0.00026 0.00026 0.00026
+Cumulative Proportion  0.96211 0.96238 0.96264 0.96290 0.96316 0.96342 0.96368
+                         PC372   PC373   PC374   PC375   PC376   PC377   PC378
+Standard deviation     0.42646 0.42371 0.42323 0.42077 0.42011 0.41898 0.41789
+Proportion of Variance 0.00026 0.00025 0.00025 0.00025 0.00025 0.00025 0.00024
+Cumulative Proportion  0.96393 0.96419 0.96444 0.96468 0.96493 0.96518 0.96542
+                         PC379   PC380   PC381   PC382   PC383   PC384   PC385
+Standard deviation     0.41560 0.41407 0.41160 0.41127 0.40873 0.40713 0.40675
+Proportion of Variance 0.00024 0.00024 0.00024 0.00024 0.00023 0.00023 0.00023
+Cumulative Proportion  0.96567 0.96591 0.96614 0.96638 0.96662 0.96685 0.96708
+                         PC386   PC387   PC388   PC389   PC390   PC391   PC392
+Standard deviation     0.40593 0.40570 0.40439 0.40349 0.40238 0.40055 0.39942
+Proportion of Variance 0.00023 0.00023 0.00023 0.00023 0.00023 0.00023 0.00022
+Cumulative Proportion  0.96731 0.96754 0.96777 0.96800 0.96823 0.96845 0.96868
+                         PC393   PC394   PC395   PC396   PC397   PC398   PC399
+Standard deviation     0.39886 0.39689 0.39430 0.39315 0.39213 0.39113 0.39045
+Proportion of Variance 0.00022 0.00022 0.00022 0.00022 0.00022 0.00021 0.00021
+Cumulative Proportion  0.96890 0.96912 0.96934 0.96955 0.96977 0.96998 0.97020
+                         PC400   PC401   PC402   PC403   PC404   PC405  PC406
+Standard deviation     0.39013 0.38783 0.38660 0.38634 0.38432 0.38236 0.3822
+Proportion of Variance 0.00021 0.00021 0.00021 0.00021 0.00021 0.00021 0.0002
+Cumulative Proportion  0.97041 0.97062 0.97083 0.97104 0.97125 0.97145 0.9717
+                        PC407  PC408  PC409  PC410  PC411  PC412  PC413   PC414
+Standard deviation     0.3805 0.3789 0.3766 0.3763 0.3758 0.3746 0.3734 0.37230
+Proportion of Variance 0.0002 0.0002 0.0002 0.0002 0.0002 0.0002 0.0002 0.00019
+Cumulative Proportion  0.9719 0.9721 0.9723 0.9725 0.9727 0.9729 0.9730 0.97325
+                         PC415   PC416   PC417   PC418   PC419   PC420   PC421
+Standard deviation     0.37052 0.36787 0.36739 0.36598 0.36505 0.36136 0.36126
+Proportion of Variance 0.00019 0.00019 0.00019 0.00019 0.00019 0.00018 0.00018
+Cumulative Proportion  0.97344 0.97363 0.97382 0.97401 0.97419 0.97438 0.97456
+                         PC422   PC423   PC424   PC425   PC426   PC427   PC428
+Standard deviation     0.36048 0.35929 0.35787 0.35654 0.35516 0.35423 0.35320
+Proportion of Variance 0.00018 0.00018 0.00018 0.00018 0.00018 0.00018 0.00017
+Cumulative Proportion  0.97474 0.97492 0.97510 0.97528 0.97546 0.97563 0.97581
+                         PC429   PC430   PC431   PC432   PC433   PC434   PC435
+Standard deviation     0.35296 0.35136 0.35066 0.35005 0.34903 0.34788 0.34639
+Proportion of Variance 0.00017 0.00017 0.00017 0.00017 0.00017 0.00017 0.00017
+Cumulative Proportion  0.97598 0.97616 0.97633 0.97650 0.97667 0.97684 0.97701
+                         PC436   PC437   PC438   PC439   PC440   PC441   PC442
+Standard deviation     0.34554 0.34495 0.34382 0.34311 0.34232 0.34169 0.34125
+Proportion of Variance 0.00017 0.00017 0.00017 0.00017 0.00016 0.00016 0.00016
+Cumulative Proportion  0.97718 0.97734 0.97751 0.97767 0.97784 0.97800 0.97817
+                         PC443   PC444   PC445   PC446   PC447   PC448   PC449
+Standard deviation     0.34043 0.33983 0.33840 0.33760 0.33516 0.33399 0.33219
+Proportion of Variance 0.00016 0.00016 0.00016 0.00016 0.00016 0.00016 0.00015
+Cumulative Proportion  0.97833 0.97849 0.97865 0.97881 0.97897 0.97912 0.97928
+                         PC450   PC451   PC452   PC453   PC454   PC455   PC456
+Standard deviation     0.33186 0.33105 0.32974 0.32862 0.32804 0.32731 0.32666
+Proportion of Variance 0.00015 0.00015 0.00015 0.00015 0.00015 0.00015 0.00015
+Cumulative Proportion  0.97943 0.97959 0.97974 0.97989 0.98004 0.98019 0.98034
+                         PC457   PC458   PC459   PC460   PC461   PC462   PC463
+Standard deviation     0.32518 0.32443 0.32377 0.32287 0.32166 0.32092 0.31967
+Proportion of Variance 0.00015 0.00015 0.00015 0.00015 0.00015 0.00014 0.00014
+Cumulative Proportion  0.98049 0.98064 0.98078 0.98093 0.98108 0.98122 0.98136
+                         PC464   PC465   PC466   PC467   PC468   PC469   PC470
+Standard deviation     0.31865 0.31819 0.31782 0.31668 0.31562 0.31484 0.31458
+Proportion of Variance 0.00014 0.00014 0.00014 0.00014 0.00014 0.00014 0.00014
+Cumulative Proportion  0.98151 0.98165 0.98179 0.98193 0.98207 0.98221 0.98235
+                         PC471   PC472   PC473   PC474   PC475   PC476   PC477
+Standard deviation     0.31388 0.31236 0.31193 0.31071 0.30977 0.30853 0.30754
+Proportion of Variance 0.00014 0.00014 0.00014 0.00014 0.00013 0.00013 0.00013
+Cumulative Proportion  0.98249 0.98262 0.98276 0.98289 0.98303 0.98316 0.98330
+                         PC478   PC479   PC480   PC481   PC482   PC483   PC484
+Standard deviation     0.30722 0.30597 0.30537 0.30501 0.30362 0.30237 0.30137
+Proportion of Variance 0.00013 0.00013 0.00013 0.00013 0.00013 0.00013 0.00013
+Cumulative Proportion  0.98343 0.98356 0.98369 0.98382 0.98395 0.98408 0.98421
+                         PC485   PC486   PC487   PC488   PC489   PC490   PC491
+Standard deviation     0.30107 0.29966 0.29952 0.29897 0.29765 0.29608 0.29552
+Proportion of Variance 0.00013 0.00013 0.00013 0.00013 0.00012 0.00012 0.00012
+Cumulative Proportion  0.98433 0.98446 0.98458 0.98471 0.98483 0.98496 0.98508
+                         PC492   PC493   PC494   PC495   PC496   PC497   PC498
+Standard deviation     0.29465 0.29392 0.29347 0.29235 0.29111 0.29022 0.28945
+Proportion of Variance 0.00012 0.00012 0.00012 0.00012 0.00012 0.00012 0.00012
+Cumulative Proportion  0.98520 0.98532 0.98544 0.98556 0.98568 0.98580 0.98592
+                         PC499   PC500   PC501   PC502   PC503   PC504   PC505
+Standard deviation     0.28772 0.28724 0.28686 0.28568 0.28546 0.28361 0.28350
+Proportion of Variance 0.00012 0.00012 0.00012 0.00011 0.00011 0.00011 0.00011
+Cumulative Proportion  0.98603 0.98615 0.98626 0.98638 0.98649 0.98661 0.98672
+                         PC506   PC507   PC508   PC509   PC510   PC511   PC512
+Standard deviation     0.28154 0.28085 0.28002 0.27942 0.27848 0.27818 0.27792
+Proportion of Variance 0.00011 0.00011 0.00011 0.00011 0.00011 0.00011 0.00011
+Cumulative Proportion  0.98683 0.98694 0.98705 0.98716 0.98727 0.98738 0.98749
+                         PC513   PC514   PC515   PC516   PC517   PC518   PC519
+Standard deviation     0.27722 0.27654 0.27595 0.27559 0.27506 0.27447 0.27403
+Proportion of Variance 0.00011 0.00011 0.00011 0.00011 0.00011 0.00011 0.00011
+Cumulative Proportion  0.98759 0.98770 0.98781 0.98791 0.98802 0.98813 0.98823
+                        PC520  PC521  PC522  PC523  PC524  PC525  PC526  PC527
+Standard deviation     0.2731 0.2721 0.2715 0.2709 0.2698 0.2696 0.2685 0.2682
+Proportion of Variance 0.0001 0.0001 0.0001 0.0001 0.0001 0.0001 0.0001 0.0001
+Cumulative Proportion  0.9883 0.9884 0.9885 0.9887 0.9888 0.9889 0.9889 0.9890
+                        PC528  PC529  PC530  PC531  PC532  PC533  PC534  PC535
+Standard deviation     0.2675 0.2669 0.2665 0.2654 0.2647 0.2635 0.2626 0.2620
+Proportion of Variance 0.0001 0.0001 0.0001 0.0001 0.0001 0.0001 0.0001 0.0001
+Cumulative Proportion  0.9891 0.9892 0.9893 0.9895 0.9896 0.9897 0.9897 0.9898
+                        PC536  PC537  PC538   PC539   PC540   PC541   PC542
+Standard deviation     0.2616 0.2610 0.2603 0.25895 0.25803 0.25781 0.25660
+Proportion of Variance 0.0001 0.0001 0.0001 0.00009 0.00009 0.00009 0.00009
+Cumulative Proportion  0.9899 0.9900 0.9901 0.99022 0.99031 0.99041 0.99050
+                         PC543   PC544   PC545   PC546   PC547   PC548   PC549
+Standard deviation     0.25643 0.25546 0.25455 0.25431 0.25331 0.25208 0.25161
+Proportion of Variance 0.00009 0.00009 0.00009 0.00009 0.00009 0.00009 0.00009
+Cumulative Proportion  0.99059 0.99068 0.99077 0.99086 0.99095 0.99104 0.99113
+                         PC550   PC551   PC552   PC553   PC554   PC555   PC556
+Standard deviation     0.25055 0.24981 0.24941 0.24842 0.24754 0.24719 0.24674
+Proportion of Variance 0.00009 0.00009 0.00009 0.00009 0.00009 0.00009 0.00009
+Cumulative Proportion  0.99122 0.99131 0.99139 0.99148 0.99157 0.99165 0.99174
+                         PC557   PC558   PC559   PC560   PC561   PC562   PC563
+Standard deviation     0.24621 0.24585 0.24458 0.24426 0.24344 0.24270 0.24212
+Proportion of Variance 0.00009 0.00008 0.00008 0.00008 0.00008 0.00008 0.00008
+Cumulative Proportion  0.99182 0.99191 0.99199 0.99208 0.99216 0.99224 0.99232
+                         PC564   PC565   PC566   PC567   PC568   PC569   PC570
+Standard deviation     0.24120 0.24096 0.24000 0.23951 0.23812 0.23782 0.23715
+Proportion of Variance 0.00008 0.00008 0.00008 0.00008 0.00008 0.00008 0.00008
+Cumulative Proportion  0.99241 0.99249 0.99257 0.99265 0.99273 0.99281 0.99289
+                         PC571   PC572   PC573   PC574   PC575   PC576   PC577
+Standard deviation     0.23668 0.23621 0.23579 0.23435 0.23377 0.23295 0.23286
+Proportion of Variance 0.00008 0.00008 0.00008 0.00008 0.00008 0.00008 0.00008
+Cumulative Proportion  0.99296 0.99304 0.99312 0.99320 0.99327 0.99335 0.99343
+                         PC578   PC579   PC580   PC581   PC582   PC583   PC584
+Standard deviation     0.23276 0.23215 0.23105 0.22976 0.22905 0.22861 0.22812
+Proportion of Variance 0.00008 0.00008 0.00007 0.00007 0.00007 0.00007 0.00007
+Cumulative Proportion  0.99350 0.99358 0.99365 0.99373 0.99380 0.99387 0.99395
+                         PC585   PC586   PC587   PC588   PC589   PC590   PC591
+Standard deviation     0.22747 0.22613 0.22574 0.22498 0.22418 0.22320 0.22275
+Proportion of Variance 0.00007 0.00007 0.00007 0.00007 0.00007 0.00007 0.00007
+Cumulative Proportion  0.99402 0.99409 0.99416 0.99423 0.99430 0.99437 0.99444
+                         PC592   PC593   PC594   PC595   PC596   PC597   PC598
+Standard deviation     0.22254 0.22148 0.22082 0.21985 0.21983 0.21947 0.21893
+Proportion of Variance 0.00007 0.00007 0.00007 0.00007 0.00007 0.00007 0.00007
+Cumulative Proportion  0.99451 0.99458 0.99465 0.99472 0.99479 0.99485 0.99492
+                         PC599   PC600   PC601   PC602   PC603   PC604   PC605
+Standard deviation     0.21837 0.21794 0.21681 0.21597 0.21537 0.21459 0.21409
+Proportion of Variance 0.00007 0.00007 0.00007 0.00007 0.00007 0.00006 0.00006
+Cumulative Proportion  0.99499 0.99505 0.99512 0.99519 0.99525 0.99532 0.99538
+                         PC606   PC607   PC608   PC609   PC610   PC611   PC612
+Standard deviation     0.21330 0.21264 0.21237 0.21105 0.21059 0.21010 0.20985
+Proportion of Variance 0.00006 0.00006 0.00006 0.00006 0.00006 0.00006 0.00006
+Cumulative Proportion  0.99544 0.99551 0.99557 0.99563 0.99569 0.99576 0.99582
+                         PC613   PC614   PC615   PC616   PC617   PC618   PC619
+Standard deviation     0.20919 0.20871 0.20831 0.20724 0.20671 0.20629 0.20546
+Proportion of Variance 0.00006 0.00006 0.00006 0.00006 0.00006 0.00006 0.00006
+Cumulative Proportion  0.99588 0.99594 0.99600 0.99606 0.99612 0.99618 0.99624
+                         PC620   PC621   PC622   PC623   PC624   PC625   PC626
+Standard deviation     0.20453 0.20402 0.20323 0.20241 0.20187 0.20153 0.20062
+Proportion of Variance 0.00006 0.00006 0.00006 0.00006 0.00006 0.00006 0.00006
+Cumulative Proportion  0.99630 0.99636 0.99642 0.99647 0.99653 0.99659 0.99664
+                         PC627   PC628   PC629   PC630   PC631   PC632   PC633
+Standard deviation     0.20042 0.19970 0.19932 0.19898 0.19870 0.19765 0.19687
+Proportion of Variance 0.00006 0.00006 0.00006 0.00006 0.00006 0.00005 0.00005
+Cumulative Proportion  0.99670 0.99676 0.99681 0.99687 0.99692 0.99698 0.99703
+                         PC634   PC635   PC636   PC637   PC638   PC639   PC640
+Standard deviation     0.19596 0.19533 0.19492 0.19379 0.19311 0.19291 0.19170
+Proportion of Variance 0.00005 0.00005 0.00005 0.00005 0.00005 0.00005 0.00005
+Cumulative Proportion  0.99709 0.99714 0.99719 0.99724 0.99730 0.99735 0.99740
+                         PC641   PC642   PC643   PC644   PC645   PC646   PC647
+Standard deviation     0.19126 0.19104 0.19006 0.18992 0.18919 0.18788 0.18746
+Proportion of Variance 0.00005 0.00005 0.00005 0.00005 0.00005 0.00005 0.00005
+Cumulative Proportion  0.99745 0.99750 0.99755 0.99760 0.99765 0.99770 0.99775
+                         PC648   PC649   PC650   PC651   PC652   PC653   PC654
+Standard deviation     0.18684 0.18639 0.18611 0.18504 0.18443 0.18326 0.18162
+Proportion of Variance 0.00005 0.00005 0.00005 0.00005 0.00005 0.00005 0.00005
+Cumulative Proportion  0.99780 0.99785 0.99790 0.99795 0.99800 0.99804 0.99809
+                         PC655   PC656   PC657   PC658   PC659   PC660   PC661
+Standard deviation     0.18147 0.18106 0.18066 0.18035 0.17887 0.17853 0.17843
+Proportion of Variance 0.00005 0.00005 0.00005 0.00005 0.00004 0.00004 0.00004
+Cumulative Proportion  0.99814 0.99818 0.99823 0.99827 0.99832 0.99836 0.99841
+                         PC662   PC663   PC664   PC665   PC666   PC667   PC668
+Standard deviation     0.17747 0.17686 0.17563 0.17527 0.17495 0.17356 0.17288
+Proportion of Variance 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004
+Cumulative Proportion  0.99845 0.99849 0.99854 0.99858 0.99862 0.99867 0.99871
+                         PC669   PC670   PC671   PC672   PC673   PC674   PC675
+Standard deviation     0.17209 0.17146 0.17040 0.16981 0.16928 0.16881 0.16783
+Proportion of Variance 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004
+Cumulative Proportion  0.99875 0.99879 0.99883 0.99887 0.99891 0.99895 0.99899
+                         PC676   PC677   PC678   PC679   PC680   PC681   PC682
+Standard deviation     0.16654 0.16617 0.16572 0.16505 0.16404 0.16356 0.16333
+Proportion of Variance 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004
+Cumulative Proportion  0.99903 0.99907 0.99911 0.99915 0.99918 0.99922 0.99926
+                         PC683   PC684   PC685   PC686   PC687   PC688   PC689
+Standard deviation     0.16152 0.16095 0.16041 0.15925 0.15867 0.15813 0.15743
+Proportion of Variance 0.00004 0.00004 0.00004 0.00004 0.00004 0.00004 0.00003
+Cumulative Proportion  0.99930 0.99933 0.99937 0.99940 0.99944 0.99947 0.99951
+                         PC690   PC691   PC692   PC693   PC694   PC695   PC696
+Standard deviation     0.15609 0.15506 0.15428 0.15393 0.15298 0.15216 0.15148
+Proportion of Variance 0.00003 0.00003 0.00003 0.00003 0.00003 0.00003 0.00003
+Cumulative Proportion  0.99954 0.99958 0.99961 0.99964 0.99968 0.99971 0.99974
+                         PC697   PC698   PC699   PC700   PC701   PC702   PC703
+Standard deviation     0.14872 0.14689 0.14610 0.14480 0.14230 0.13701 0.13495
+Proportion of Variance 0.00003 0.00003 0.00003 0.00003 0.00003 0.00003 0.00003
+Cumulative Proportion  0.99977 0.99980 0.99983 0.99986 0.99989 0.99992 0.99994
+                         PC704   PC705   PC706   PC707     PC708     PC709
+Standard deviation     0.13120 0.11879 0.08028 0.06239 7.483e-13 1.363e-13
+Proportion of Variance 0.00002 0.00002 0.00001 0.00001 0.000e+00 0.000e+00
+Cumulative Proportion  0.99997 0.99999 0.99999 1.00000 1.000e+00 1.000e+00
+                           PC710    PC711    PC712     PC713
+Standard deviation     1.055e-14 4.52e-15 3.86e-15 2.186e-15
+Proportion of Variance 0.000e+00 0.00e+00 0.00e+00 0.000e+00
+Cumulative Proportion  1.000e+00 1.00e+00 1.00e+00 1.000e+00</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#take all PCs &gt; 1</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>PCs <span class="ot">&lt;-</span> <span class="fu">length</span>(<span class="fu">which</span>(pca<span class="sc">$</span>sdev<span class="sc">^</span><span class="dv">2</span> <span class="sc">&gt;</span> <span class="dv">1</span>))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>X_train_pca_full <span class="ot">&lt;-</span> pca<span class="sc">$</span>x[,<span class="dv">1</span><span class="sc">:</span>PCs]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>X_test_pca <span class="ot">&lt;-</span> <span class="fu">predict</span>(pca, <span class="at">newdata =</span> X_test_nonzero)[,<span class="dv">1</span><span class="sc">:</span>PCs]</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>train_idx_pca <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(X_train_pca_full), <span class="at">size =</span> <span class="fl">0.8</span> <span class="sc">*</span> <span class="fu">nrow</span>(X_train_pca_full))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>X_train_pca <span class="ot">&lt;-</span> X_train_pca_full[train_idx_pca,]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>y_train_pca <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(dat<span class="sc">$</span>train<span class="sc">$</span>labels[train_idx_pca])</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>X_valid_pca <span class="ot">&lt;-</span> X_train_pca_full[<span class="sc">-</span>train_idx_pca,]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>y_valid_pca <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>labels[<span class="sc">-</span>train_idx_pca]</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>rf_model_pca <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(<span class="at">x =</span> X_train_pca, <span class="at">y =</span> y_train_pca, <span class="at">ntree =</span> <span class="dv">100</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>valid_preds_pca <span class="ot">&lt;-</span> <span class="fu">predict</span>(rf_model_pca, X_valid_pca)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>accuracy_pca <span class="ot">&lt;-</span> <span class="fu">mean</span>(valid_preds_pca <span class="sc">==</span> y_valid_pca)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Validation Accuracy:"</span>, <span class="fu">round</span>(accuracy_pca <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>), <span class="st">"%</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Validation Accuracy: 94.4 %</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#the accuracy is 94.4%, PCA seems not make a difference here.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#try XGBoost</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(xgboost)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: 程序包'xgboost'是用R版本4.4.3 来建造的</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>X_train_xgboost_full <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>images</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>X_test_xgboost <span class="ot">&lt;-</span> dat<span class="sc">$</span>test<span class="sc">$</span>images</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>X_train_mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(X_train_xgboost_full)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>train_idx_xgboost <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(X_train_mat), <span class="at">size =</span> <span class="fl">0.8</span> <span class="sc">*</span> <span class="fu">nrow</span>(X_train_mat))</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>X_train_xgboost <span class="ot">&lt;-</span> X_train_mat[train_idx_xgboost,]</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>y_train_xgboost <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>labels[train_idx_xgboost]</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>X_valid_xgboost <span class="ot">&lt;-</span> X_train_mat[<span class="sc">-</span>train_idx_xgboost,]</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>y_valid_xgboost <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>labels[<span class="sc">-</span>train_idx_xgboost]</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>dtrain <span class="ot">&lt;-</span> <span class="fu">xgb.DMatrix</span>(<span class="at">data =</span> X_train_xgboost, <span class="at">label =</span> y_train_xgboost)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>dvalid <span class="ot">&lt;-</span> <span class="fu">xgb.DMatrix</span>(<span class="at">data =</span> X_valid_xgboost, <span class="at">label =</span> y_valid_xgboost)</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="co">#The detailed fine tuning procedure is omitted here</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="co">#change eta from 0.1 to 0.05, nrounds 200 to 400</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="co">#The performance of model trained for 400 rounds is similar to that trained for</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="co">#350 rounds</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">objective =</span> <span class="st">"multi:softmax"</span>,</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">num_class =</span> <span class="dv">10</span>,</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_depth =</span> <span class="dv">6</span>,</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">eta =</span> <span class="fl">0.05</span>,</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">eval_metric =</span> <span class="st">"merror"</span></span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>xgb_model <span class="ot">&lt;-</span> <span class="fu">xgb.train</span>(</span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">params =</span> params,</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> dtrain,</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrounds =</span> <span class="dv">400</span>,</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">watchlist =</span> <span class="fu">list</span>(<span class="at">train =</span> dtrain, <span class="at">valid =</span> dvalid),</span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="dv">1</span></span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] train-merror:0.134857   valid-merror:0.155905 
+[2] train-merror:0.120619   valid-merror:0.136857 
+[3] train-merror:0.104381   valid-merror:0.124190 
+[4] train-merror:0.091786   valid-merror:0.110190 
+[5] train-merror:0.087429   valid-merror:0.106286 
+[6] train-merror:0.084429   valid-merror:0.102857 
+[7] train-merror:0.081024   valid-merror:0.097333 
+[8] train-merror:0.078071   valid-merror:0.094190 
+[9] train-merror:0.075190   valid-merror:0.092190 
+[10]    train-merror:0.073690   valid-merror:0.091048 
+[11]    train-merror:0.071786   valid-merror:0.089714 
+[12]    train-merror:0.070595   valid-merror:0.089238 
+[13]    train-merror:0.069214   valid-merror:0.088095 
+[14]    train-merror:0.067548   valid-merror:0.086381 
+[15]    train-merror:0.066714   valid-merror:0.084571 
+[16]    train-merror:0.065690   valid-merror:0.083429 
+[17]    train-merror:0.064476   valid-merror:0.082381 
+[18]    train-merror:0.063095   valid-merror:0.081143 
+[19]    train-merror:0.062095   valid-merror:0.081048 
+[20]    train-merror:0.061238   valid-merror:0.079429 
+[21]    train-merror:0.060143   valid-merror:0.078476 
+[22]    train-merror:0.059000   valid-merror:0.078095 
+[23]    train-merror:0.058048   valid-merror:0.076667 
+[24]    train-merror:0.056476   valid-merror:0.075238 
+[25]    train-merror:0.054905   valid-merror:0.073619 
+[26]    train-merror:0.053762   valid-merror:0.072571 
+[27]    train-merror:0.052976   valid-merror:0.072381 
+[28]    train-merror:0.052119   valid-merror:0.071429 
+[29]    train-merror:0.051238   valid-merror:0.070286 
+[30]    train-merror:0.050238   valid-merror:0.069810 
+[31]    train-merror:0.049286   valid-merror:0.069143 
+[32]    train-merror:0.048643   valid-merror:0.068762 
+[33]    train-merror:0.047857   valid-merror:0.068095 
+[34]    train-merror:0.047071   valid-merror:0.068286 
+[35]    train-merror:0.046571   valid-merror:0.067905 
+[36]    train-merror:0.045881   valid-merror:0.067524 
+[37]    train-merror:0.044976   valid-merror:0.066190 
+[38]    train-merror:0.044214   valid-merror:0.065429 
+[39]    train-merror:0.043357   valid-merror:0.065333 
+[40]    train-merror:0.042619   valid-merror:0.064762 
+[41]    train-merror:0.041738   valid-merror:0.064000 
+[42]    train-merror:0.041048   valid-merror:0.064000 
+[43]    train-merror:0.040286   valid-merror:0.063048 
+[44]    train-merror:0.039548   valid-merror:0.062762 
+[45]    train-merror:0.039238   valid-merror:0.062000 
+[46]    train-merror:0.038619   valid-merror:0.061238 
+[47]    train-merror:0.038167   valid-merror:0.061238 
+[48]    train-merror:0.037500   valid-merror:0.060286 
+[49]    train-merror:0.036786   valid-merror:0.060762 
+[50]    train-merror:0.036024   valid-merror:0.060381 
+[51]    train-merror:0.035690   valid-merror:0.059619 
+[52]    train-merror:0.034762   valid-merror:0.058571 
+[53]    train-merror:0.034167   valid-merror:0.058286 
+[54]    train-merror:0.033619   valid-merror:0.057714 
+[55]    train-merror:0.033190   valid-merror:0.057810 
+[56]    train-merror:0.032667   valid-merror:0.057429 
+[57]    train-merror:0.031810   valid-merror:0.056571 
+[58]    train-merror:0.031214   valid-merror:0.056000 
+[59]    train-merror:0.030667   valid-merror:0.055810 
+[60]    train-merror:0.030262   valid-merror:0.055714 
+[61]    train-merror:0.029595   valid-merror:0.055238 
+[62]    train-merror:0.029000   valid-merror:0.055238 
+[63]    train-merror:0.028286   valid-merror:0.054476 
+[64]    train-merror:0.027643   valid-merror:0.054381 
+[65]    train-merror:0.027333   valid-merror:0.053619 
+[66]    train-merror:0.026690   valid-merror:0.052857 
+[67]    train-merror:0.026286   valid-merror:0.052667 
+[68]    train-merror:0.025905   valid-merror:0.052095 
+[69]    train-merror:0.025429   valid-merror:0.051429 
+[70]    train-merror:0.025000   valid-merror:0.051810 
+[71]    train-merror:0.024690   valid-merror:0.051143 
+[72]    train-merror:0.024286   valid-merror:0.050762 
+[73]    train-merror:0.023833   valid-merror:0.050667 
+[74]    train-merror:0.023310   valid-merror:0.050381 
+[75]    train-merror:0.022881   valid-merror:0.050000 
+[76]    train-merror:0.022667   valid-merror:0.049619 
+[77]    train-merror:0.022286   valid-merror:0.049333 
+[78]    train-merror:0.021833   valid-merror:0.048762 
+[79]    train-merror:0.021524   valid-merror:0.048190 
+[80]    train-merror:0.021143   valid-merror:0.048286 
+[81]    train-merror:0.020905   valid-merror:0.047333 
+[82]    train-merror:0.020667   valid-merror:0.047429 
+[83]    train-merror:0.020214   valid-merror:0.046857 
+[84]    train-merror:0.019905   valid-merror:0.046667 
+[85]    train-merror:0.019381   valid-merror:0.046286 
+[86]    train-merror:0.018929   valid-merror:0.046190 
+[87]    train-merror:0.018619   valid-merror:0.045810 
+[88]    train-merror:0.018262   valid-merror:0.045619 
+[89]    train-merror:0.018000   valid-merror:0.045524 
+[90]    train-merror:0.017714   valid-merror:0.045524 
+[91]    train-merror:0.017476   valid-merror:0.045238 
+[92]    train-merror:0.017190   valid-merror:0.045048 
+[93]    train-merror:0.016833   valid-merror:0.044667 
+[94]    train-merror:0.016810   valid-merror:0.044571 
+[95]    train-merror:0.016500   valid-merror:0.044190 
+[96]    train-merror:0.016071   valid-merror:0.044286 
+[97]    train-merror:0.015905   valid-merror:0.043905 
+[98]    train-merror:0.015667   valid-merror:0.043333 
+[99]    train-merror:0.015405   valid-merror:0.043333 
+[100]   train-merror:0.015071   valid-merror:0.042667 
+[101]   train-merror:0.014738   valid-merror:0.042476 
+[102]   train-merror:0.014571   valid-merror:0.042190 
+[103]   train-merror:0.014405   valid-merror:0.042095 
+[104]   train-merror:0.014119   valid-merror:0.041619 
+[105]   train-merror:0.013976   valid-merror:0.041524 
+[106]   train-merror:0.013571   valid-merror:0.041619 
+[107]   train-merror:0.013333   valid-merror:0.041333 
+[108]   train-merror:0.013143   valid-merror:0.041048 
+[109]   train-merror:0.012905   valid-merror:0.040857 
+[110]   train-merror:0.012690   valid-merror:0.040667 
+[111]   train-merror:0.012357   valid-merror:0.040190 
+[112]   train-merror:0.012214   valid-merror:0.040095 
+[113]   train-merror:0.012143   valid-merror:0.040000 
+[114]   train-merror:0.011905   valid-merror:0.039714 
+[115]   train-merror:0.011714   valid-merror:0.039619 
+[116]   train-merror:0.011476   valid-merror:0.039524 
+[117]   train-merror:0.011333   valid-merror:0.039524 
+[118]   train-merror:0.011095   valid-merror:0.038952 
+[119]   train-merror:0.011000   valid-merror:0.038762 
+[120]   train-merror:0.010881   valid-merror:0.038952 
+[121]   train-merror:0.010762   valid-merror:0.038762 
+[122]   train-merror:0.010619   valid-merror:0.038571 
+[123]   train-merror:0.010405   valid-merror:0.038381 
+[124]   train-merror:0.010190   valid-merror:0.038286 
+[125]   train-merror:0.010071   valid-merror:0.038000 
+[126]   train-merror:0.009976   valid-merror:0.038095 
+[127]   train-merror:0.009762   valid-merror:0.037905 
+[128]   train-merror:0.009619   valid-merror:0.037810 
+[129]   train-merror:0.009571   valid-merror:0.037714 
+[130]   train-merror:0.009333   valid-merror:0.037714 
+[131]   train-merror:0.009286   valid-merror:0.037429 
+[132]   train-merror:0.009119   valid-merror:0.037238 
+[133]   train-merror:0.008929   valid-merror:0.037048 
+[134]   train-merror:0.008905   valid-merror:0.036857 
+[135]   train-merror:0.008643   valid-merror:0.037143 
+[136]   train-merror:0.008476   valid-merror:0.037048 
+[137]   train-merror:0.008286   valid-merror:0.037048 
+[138]   train-merror:0.008095   valid-merror:0.036381 
+[139]   train-merror:0.008048   valid-merror:0.036667 
+[140]   train-merror:0.007881   valid-merror:0.036381 
+[141]   train-merror:0.007762   valid-merror:0.036476 
+[142]   train-merror:0.007595   valid-merror:0.036286 
+[143]   train-merror:0.007452   valid-merror:0.035810 
+[144]   train-merror:0.007310   valid-merror:0.035714 
+[145]   train-merror:0.007214   valid-merror:0.035905 
+[146]   train-merror:0.007048   valid-merror:0.035714 
+[147]   train-merror:0.006976   valid-merror:0.035619 
+[148]   train-merror:0.006857   valid-merror:0.035714 
+[149]   train-merror:0.006810   valid-merror:0.035238 
+[150]   train-merror:0.006738   valid-merror:0.035238 
+[151]   train-merror:0.006667   valid-merror:0.034857 
+[152]   train-merror:0.006524   valid-merror:0.034762 
+[153]   train-merror:0.006429   valid-merror:0.034476 
+[154]   train-merror:0.006333   valid-merror:0.034381 
+[155]   train-merror:0.006167   valid-merror:0.034381 
+[156]   train-merror:0.006119   valid-merror:0.034190 
+[157]   train-merror:0.006048   valid-merror:0.034286 
+[158]   train-merror:0.006000   valid-merror:0.034190 
+[159]   train-merror:0.005786   valid-merror:0.033905 
+[160]   train-merror:0.005619   valid-merror:0.033619 
+[161]   train-merror:0.005476   valid-merror:0.033524 
+[162]   train-merror:0.005333   valid-merror:0.033429 
+[163]   train-merror:0.005286   valid-merror:0.033333 
+[164]   train-merror:0.005238   valid-merror:0.033143 
+[165]   train-merror:0.005167   valid-merror:0.033048 
+[166]   train-merror:0.005071   valid-merror:0.033048 
+[167]   train-merror:0.004881   valid-merror:0.033048 
+[168]   train-merror:0.004810   valid-merror:0.032857 
+[169]   train-merror:0.004762   valid-merror:0.032667 
+[170]   train-merror:0.004571   valid-merror:0.032857 
+[171]   train-merror:0.004381   valid-merror:0.032667 
+[172]   train-merror:0.004357   valid-merror:0.032571 
+[173]   train-merror:0.004333   valid-merror:0.032571 
+[174]   train-merror:0.004190   valid-merror:0.032286 
+[175]   train-merror:0.004071   valid-merror:0.032381 
+[176]   train-merror:0.003976   valid-merror:0.032000 
+[177]   train-merror:0.003833   valid-merror:0.032000 
+[178]   train-merror:0.003738   valid-merror:0.031905 
+[179]   train-merror:0.003667   valid-merror:0.031714 
+[180]   train-merror:0.003548   valid-merror:0.031714 
+[181]   train-merror:0.003548   valid-merror:0.031714 
+[182]   train-merror:0.003500   valid-merror:0.031714 
+[183]   train-merror:0.003405   valid-merror:0.031714 
+[184]   train-merror:0.003333   valid-merror:0.031810 
+[185]   train-merror:0.003286   valid-merror:0.031714 
+[186]   train-merror:0.003310   valid-merror:0.031429 
+[187]   train-merror:0.003190   valid-merror:0.031524 
+[188]   train-merror:0.003143   valid-merror:0.031524 
+[189]   train-merror:0.003119   valid-merror:0.031810 
+[190]   train-merror:0.003119   valid-merror:0.031619 
+[191]   train-merror:0.003048   valid-merror:0.031429 
+[192]   train-merror:0.002976   valid-merror:0.031524 
+[193]   train-merror:0.002857   valid-merror:0.031429 
+[194]   train-merror:0.002762   valid-merror:0.031333 
+[195]   train-merror:0.002762   valid-merror:0.031143 
+[196]   train-merror:0.002643   valid-merror:0.030952 
+[197]   train-merror:0.002524   valid-merror:0.031143 
+[198]   train-merror:0.002381   valid-merror:0.031143 
+[199]   train-merror:0.002429   valid-merror:0.030952 
+[200]   train-merror:0.002381   valid-merror:0.030857 
+[201]   train-merror:0.002310   valid-merror:0.030857 
+[202]   train-merror:0.002286   valid-merror:0.030476 
+[203]   train-merror:0.002286   valid-merror:0.030476 
+[204]   train-merror:0.002286   valid-merror:0.030571 
+[205]   train-merror:0.002190   valid-merror:0.030476 
+[206]   train-merror:0.002190   valid-merror:0.030571 
+[207]   train-merror:0.002143   valid-merror:0.030286 
+[208]   train-merror:0.002119   valid-merror:0.030286 
+[209]   train-merror:0.002071   valid-merror:0.030095 
+[210]   train-merror:0.002000   valid-merror:0.029905 
+[211]   train-merror:0.001952   valid-merror:0.029905 
+[212]   train-merror:0.001929   valid-merror:0.029810 
+[213]   train-merror:0.001905   valid-merror:0.029714 
+[214]   train-merror:0.001857   valid-merror:0.029714 
+[215]   train-merror:0.001786   valid-merror:0.029524 
+[216]   train-merror:0.001762   valid-merror:0.029524 
+[217]   train-merror:0.001690   valid-merror:0.029238 
+[218]   train-merror:0.001643   valid-merror:0.029238 
+[219]   train-merror:0.001595   valid-merror:0.029333 
+[220]   train-merror:0.001571   valid-merror:0.029238 
+[221]   train-merror:0.001571   valid-merror:0.029048 
+[222]   train-merror:0.001524   valid-merror:0.029143 
+[223]   train-merror:0.001476   valid-merror:0.028952 
+[224]   train-merror:0.001429   valid-merror:0.028857 
+[225]   train-merror:0.001357   valid-merror:0.028762 
+[226]   train-merror:0.001357   valid-merror:0.028762 
+[227]   train-merror:0.001310   valid-merror:0.028952 
+[228]   train-merror:0.001286   valid-merror:0.029048 
+[229]   train-merror:0.001238   valid-merror:0.028952 
+[230]   train-merror:0.001214   valid-merror:0.028952 
+[231]   train-merror:0.001143   valid-merror:0.028952 
+[232]   train-merror:0.001143   valid-merror:0.028952 
+[233]   train-merror:0.001119   valid-merror:0.028952 
+[234]   train-merror:0.001071   valid-merror:0.028857 
+[235]   train-merror:0.001048   valid-merror:0.028952 
+[236]   train-merror:0.001024   valid-merror:0.028667 
+[237]   train-merror:0.001024   valid-merror:0.028571 
+[238]   train-merror:0.001000   valid-merror:0.028571 
+[239]   train-merror:0.000952   valid-merror:0.028571 
+[240]   train-merror:0.000881   valid-merror:0.028667 
+[241]   train-merror:0.000857   valid-merror:0.028667 
+[242]   train-merror:0.000833   valid-merror:0.028476 
+[243]   train-merror:0.000810   valid-merror:0.028476 
+[244]   train-merror:0.000786   valid-merror:0.028381 
+[245]   train-merror:0.000762   valid-merror:0.028286 
+[246]   train-merror:0.000714   valid-merror:0.028095 
+[247]   train-merror:0.000714   valid-merror:0.028190 
+[248]   train-merror:0.000714   valid-merror:0.028190 
+[249]   train-merror:0.000714   valid-merror:0.028095 
+[250]   train-merror:0.000690   valid-merror:0.028000 
+[251]   train-merror:0.000690   valid-merror:0.028000 
+[252]   train-merror:0.000690   valid-merror:0.027905 
+[253]   train-merror:0.000643   valid-merror:0.027810 
+[254]   train-merror:0.000643   valid-merror:0.027905 
+[255]   train-merror:0.000619   valid-merror:0.027524 
+[256]   train-merror:0.000619   valid-merror:0.027905 
+[257]   train-merror:0.000619   valid-merror:0.027810 
+[258]   train-merror:0.000619   valid-merror:0.027619 
+[259]   train-merror:0.000619   valid-merror:0.027905 
+[260]   train-merror:0.000571   valid-merror:0.027714 
+[261]   train-merror:0.000571   valid-merror:0.027619 
+[262]   train-merror:0.000571   valid-merror:0.027714 
+[263]   train-merror:0.000571   valid-merror:0.027619 
+[264]   train-merror:0.000548   valid-merror:0.027619 
+[265]   train-merror:0.000524   valid-merror:0.027619 
+[266]   train-merror:0.000524   valid-merror:0.027524 
+[267]   train-merror:0.000500   valid-merror:0.027524 
+[268]   train-merror:0.000476   valid-merror:0.027429 
+[269]   train-merror:0.000476   valid-merror:0.027143 
+[270]   train-merror:0.000452   valid-merror:0.027143 
+[271]   train-merror:0.000452   valid-merror:0.027238 
+[272]   train-merror:0.000405   valid-merror:0.027333 
+[273]   train-merror:0.000405   valid-merror:0.027238 
+[274]   train-merror:0.000381   valid-merror:0.027333 
+[275]   train-merror:0.000310   valid-merror:0.027238 
+[276]   train-merror:0.000310   valid-merror:0.027143 
+[277]   train-merror:0.000286   valid-merror:0.027333 
+[278]   train-merror:0.000286   valid-merror:0.027048 
+[279]   train-merror:0.000286   valid-merror:0.026952 
+[280]   train-merror:0.000286   valid-merror:0.027048 
+[281]   train-merror:0.000262   valid-merror:0.027143 
+[282]   train-merror:0.000262   valid-merror:0.027048 
+[283]   train-merror:0.000262   valid-merror:0.027143 
+[284]   train-merror:0.000238   valid-merror:0.027048 
+[285]   train-merror:0.000238   valid-merror:0.026952 
+[286]   train-merror:0.000214   valid-merror:0.026952 
+[287]   train-merror:0.000190   valid-merror:0.026952 
+[288]   train-merror:0.000167   valid-merror:0.027048 
+[289]   train-merror:0.000167   valid-merror:0.026667 
+[290]   train-merror:0.000143   valid-merror:0.026571 
+[291]   train-merror:0.000143   valid-merror:0.026571 
+[292]   train-merror:0.000143   valid-merror:0.026476 
+[293]   train-merror:0.000143   valid-merror:0.026381 
+[294]   train-merror:0.000119   valid-merror:0.026190 
+[295]   train-merror:0.000119   valid-merror:0.026381 
+[296]   train-merror:0.000119   valid-merror:0.026381 
+[297]   train-merror:0.000119   valid-merror:0.026381 
+[298]   train-merror:0.000071   valid-merror:0.026381 
+[299]   train-merror:0.000071   valid-merror:0.026190 
+[300]   train-merror:0.000071   valid-merror:0.026286 
+[301]   train-merror:0.000071   valid-merror:0.026476 
+[302]   train-merror:0.000071   valid-merror:0.026381 
+[303]   train-merror:0.000071   valid-merror:0.026381 
+[304]   train-merror:0.000071   valid-merror:0.026476 
+[305]   train-merror:0.000071   valid-merror:0.026286 
+[306]   train-merror:0.000071   valid-merror:0.026571 
+[307]   train-merror:0.000048   valid-merror:0.026476 
+[308]   train-merror:0.000024   valid-merror:0.026190 
+[309]   train-merror:0.000024   valid-merror:0.026286 
+[310]   train-merror:0.000024   valid-merror:0.026190 
+[311]   train-merror:0.000024   valid-merror:0.026190 
+[312]   train-merror:0.000024   valid-merror:0.026286 
+[313]   train-merror:0.000024   valid-merror:0.026190 
+[314]   train-merror:0.000024   valid-merror:0.026095 
+[315]   train-merror:0.000024   valid-merror:0.026286 
+[316]   train-merror:0.000024   valid-merror:0.026190 
+[317]   train-merror:0.000024   valid-merror:0.026095 
+[318]   train-merror:0.000024   valid-merror:0.026095 
+[319]   train-merror:0.000000   valid-merror:0.026000 
+[320]   train-merror:0.000000   valid-merror:0.025905 
+[321]   train-merror:0.000000   valid-merror:0.025810 
+[322]   train-merror:0.000000   valid-merror:0.025714 
+[323]   train-merror:0.000000   valid-merror:0.025619 
+[324]   train-merror:0.000000   valid-merror:0.025714 
+[325]   train-merror:0.000000   valid-merror:0.025619 
+[326]   train-merror:0.000000   valid-merror:0.025714 
+[327]   train-merror:0.000000   valid-merror:0.025714 
+[328]   train-merror:0.000000   valid-merror:0.025714 
+[329]   train-merror:0.000000   valid-merror:0.025714 
+[330]   train-merror:0.000000   valid-merror:0.025714 
+[331]   train-merror:0.000000   valid-merror:0.025810 
+[332]   train-merror:0.000000   valid-merror:0.025905 
+[333]   train-merror:0.000000   valid-merror:0.025810 
+[334]   train-merror:0.000000   valid-merror:0.025714 
+[335]   train-merror:0.000000   valid-merror:0.025810 
+[336]   train-merror:0.000000   valid-merror:0.025714 
+[337]   train-merror:0.000000   valid-merror:0.025810 
+[338]   train-merror:0.000000   valid-merror:0.025714 
+[339]   train-merror:0.000000   valid-merror:0.025810 
+[340]   train-merror:0.000000   valid-merror:0.025810 
+[341]   train-merror:0.000000   valid-merror:0.025810 
+[342]   train-merror:0.000000   valid-merror:0.025714 
+[343]   train-merror:0.000000   valid-merror:0.025905 
+[344]   train-merror:0.000000   valid-merror:0.025905 
+[345]   train-merror:0.000000   valid-merror:0.025810 
+[346]   train-merror:0.000000   valid-merror:0.025714 
+[347]   train-merror:0.000000   valid-merror:0.025810 
+[348]   train-merror:0.000000   valid-merror:0.025810 
+[349]   train-merror:0.000000   valid-merror:0.025714 
+[350]   train-merror:0.000000   valid-merror:0.025714 
+[351]   train-merror:0.000000   valid-merror:0.025714 
+[352]   train-merror:0.000000   valid-merror:0.025810 
+[353]   train-merror:0.000000   valid-merror:0.025714 
+[354]   train-merror:0.000000   valid-merror:0.025714 
+[355]   train-merror:0.000000   valid-merror:0.025714 
+[356]   train-merror:0.000000   valid-merror:0.025619 
+[357]   train-merror:0.000000   valid-merror:0.025333 
+[358]   train-merror:0.000000   valid-merror:0.025524 
+[359]   train-merror:0.000000   valid-merror:0.025429 
+[360]   train-merror:0.000000   valid-merror:0.025619 
+[361]   train-merror:0.000000   valid-merror:0.025619 
+[362]   train-merror:0.000000   valid-merror:0.025524 
+[363]   train-merror:0.000000   valid-merror:0.025524 
+[364]   train-merror:0.000000   valid-merror:0.025619 
+[365]   train-merror:0.000000   valid-merror:0.025619 
+[366]   train-merror:0.000000   valid-merror:0.025524 
+[367]   train-merror:0.000000   valid-merror:0.025619 
+[368]   train-merror:0.000000   valid-merror:0.025524 
+[369]   train-merror:0.000000   valid-merror:0.025333 
+[370]   train-merror:0.000000   valid-merror:0.025238 
+[371]   train-merror:0.000000   valid-merror:0.025238 
+[372]   train-merror:0.000000   valid-merror:0.025333 
+[373]   train-merror:0.000000   valid-merror:0.025143 
+[374]   train-merror:0.000000   valid-merror:0.025238 
+[375]   train-merror:0.000000   valid-merror:0.025238 
+[376]   train-merror:0.000000   valid-merror:0.025143 
+[377]   train-merror:0.000000   valid-merror:0.024952 
+[378]   train-merror:0.000000   valid-merror:0.025143 
+[379]   train-merror:0.000000   valid-merror:0.024952 
+[380]   train-merror:0.000000   valid-merror:0.025048 
+[381]   train-merror:0.000000   valid-merror:0.024952 
+[382]   train-merror:0.000000   valid-merror:0.024762 
+[383]   train-merror:0.000000   valid-merror:0.024952 
+[384]   train-merror:0.000000   valid-merror:0.024952 
+[385]   train-merror:0.000000   valid-merror:0.024857 
+[386]   train-merror:0.000000   valid-merror:0.024667 
+[387]   train-merror:0.000000   valid-merror:0.024762 
+[388]   train-merror:0.000000   valid-merror:0.024762 
+[389]   train-merror:0.000000   valid-merror:0.024762 
+[390]   train-merror:0.000000   valid-merror:0.024571 
+[391]   train-merror:0.000000   valid-merror:0.024571 
+[392]   train-merror:0.000000   valid-merror:0.024667 
+[393]   train-merror:0.000000   valid-merror:0.024667 
+[394]   train-merror:0.000000   valid-merror:0.024667 
+[395]   train-merror:0.000000   valid-merror:0.024667 
+[396]   train-merror:0.000000   valid-merror:0.024667 
+[397]   train-merror:0.000000   valid-merror:0.024571 
+[398]   train-merror:0.000000   valid-merror:0.024571 
+[399]   train-merror:0.000000   valid-merror:0.024571 
+[400]   train-merror:0.000000   valid-merror:0.024476 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>valid_predictions_xgboost <span class="ot">&lt;-</span> <span class="fu">predict</span>(xgb_model, dvalid)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>accuracy_xgboost <span class="ot">&lt;-</span> <span class="fu">mean</span>(valid_predictions_xgboost <span class="sc">==</span> y_valid_xgboost)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Validation Accuracy:"</span>, <span class="fu">round</span>(accuracy_xgboost <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">2</span>), <span class="st">"%</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Validation Accuracy: 97.55 %</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#The baseline model(Random Forest) validation accuracy: 96.8%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#The Random Forest + PCA model validation accuracy: 94.4%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">#The Xgboost model validation accuracy: 97.55%</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>X_train_xgboost_full <span class="ot">&lt;-</span> dat<span class="sc">$</span>train<span class="sc">$</span>images</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>X_test_xgboost <span class="ot">&lt;-</span> dat<span class="sc">$</span>test<span class="sc">$</span>images</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>X_train_mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(X_train_xgboost_full)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>dtrain_full <span class="ot">&lt;-</span> <span class="fu">xgb.DMatrix</span>(<span class="at">data =</span> X_train_mat, <span class="at">label =</span> dat<span class="sc">$</span>train<span class="sc">$</span>labels)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>dtest <span class="ot">&lt;-</span> <span class="fu">xgb.DMatrix</span>(<span class="at">data =</span> <span class="fu">as.matrix</span>(X_test_xgboost))</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">objective =</span> <span class="st">"multi:softmax"</span>,</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">num_class =</span> <span class="dv">10</span>,</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">max_depth =</span> <span class="dv">6</span>,</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">eta =</span> <span class="fl">0.05</span>,</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">eval_metric =</span> <span class="st">"merror"</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>xgb_model_final <span class="ot">&lt;-</span> <span class="fu">xgb.train</span>(</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">params =</span> params,</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> dtrain_full,</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrounds =</span> <span class="dv">400</span>,</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="dv">1</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>digit_predictions <span class="ot">&lt;-</span> <span class="fu">predict</span>(xgb_model_final, dtest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(digit_predictions, <span class="at">file =</span> <span class="st">"digit_predictions.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You will submit:</p>
+<ol type="1">
+<li><p>The file <code>digit_predictions.rds</code></p></li>
+<li><p>A quarto file that reproduces your analysis and provides brief explanations for your choices.</p></li>
+</ol>
+<p><strong>If your code reproduces the result</strong>, your grade will be your accuracy rounded up the closest integer. So, for example, if your accuracy is .993 your grade will be 100%. Depending on the distribution of accuracy values, the teaching staff may issue an update about the grading system used.</p>
+<p>You will have one opportunities to redo your predictions after you see your accuracy from your first submission.</p>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

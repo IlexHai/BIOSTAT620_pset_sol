@@ -1,0 +1,160 @@
+---
+title: Problem set 10
+date: 2025-04-20
+---
+
+The data for this problem set is provided by this link: `https://github.com/dmcable/BIOSTAT620/raw/refs/heads/main/data/pset-10-mnist.rds`
+
+Read this object into R. For example, you can use:
+
+```{r}
+fn <- tempfile()
+download.file("https://github.com/dmcable/BIOSTAT620/raw/refs/heads/main/data/pset-10-mnist.rds", fn)
+dat <- readRDS(fn)
+file.remove(fn)
+```
+
+
+The object is a list with two components `dat$train` and `dat$test`. Use the data in `dat$train` to  develop a machine learning algorithms to predict the labels for the images in the `dat$test$images` component.
+
+Save the your predicted labels in an object called `digit_predictions`. This should be a vector of integers with length `nrow(dat$test$images)`. It is important that the `digit_predictions` is ordered to match the rows of `dat$test$images`.
+
+Save the object to a file called `digit_predictions.rds` using:
+```{r}
+library(randomForest)
+set.seed(10)
+#get a validation set
+train_idx <- sample(1:nrow(dat$train$images), size = 0.8 * nrow(dat$train$images))
+X_train_baseline <- dat$train$images[train_idx, ]
+y_train_baseline <- as.factor(dat$train$labels[train_idx])
+X_valid_baseline <- dat$train$images[-train_idx, ]
+y_valid_baseline <- dat$train$labels[-train_idx]
+
+rf_model_baseline <- randomForest(x = X_train_baseline, y = y_train_baseline, ntree = 100)
+
+valid_preds_baseline <- predict(rf_model_baseline, X_valid_baseline)
+accuracy_baseline <- mean(valid_preds_baseline == y_valid_baseline)
+
+cat("Validation Accuracy:", round(accuracy_baseline * 100, 2), "%\n")
+
+#the baseline(only random forest) model has an accuracy of 96.8% on the validation set.
+```
+```{r}
+zero_variance_columns <- apply(dat$train$images, 2, function(col) var(col) == 0)
+X_train_nonzero <- dat$train$images[,!zero_variance_columns]
+X_test_nonzero <- dat$test$images[,!zero_variance_columns]
+pca <- prcomp(X_train_nonzero, center = TRUE, scale. = TRUE)
+summary(pca)
+```
+```{r}
+#take all PCs > 1
+set.seed(10)
+PCs <- length(which(pca$sdev^2 > 1))
+X_train_pca_full <- pca$x[,1:PCs]
+X_test_pca <- predict(pca, newdata = X_test_nonzero)[,1:PCs]
+
+train_idx_pca <- sample(1:nrow(X_train_pca_full), size = 0.8 * nrow(X_train_pca_full))
+X_train_pca <- X_train_pca_full[train_idx_pca,]
+y_train_pca <- as.factor(dat$train$labels[train_idx_pca])
+X_valid_pca <- X_train_pca_full[-train_idx_pca,]
+y_valid_pca <- dat$train$labels[-train_idx_pca]
+
+
+rf_model_pca <- randomForest(x = X_train_pca, y = y_train_pca, ntree = 100)
+valid_preds_pca <- predict(rf_model_pca, X_valid_pca)
+accuracy_pca <- mean(valid_preds_pca == y_valid_pca)
+
+cat("Validation Accuracy:", round(accuracy_pca * 100, 2), "%\n")
+#the accuracy is 94.4%, PCA seems not make a difference here.
+```
+
+```{r}
+#try XGBoost
+library(xgboost)
+set.seed(10)
+X_train_xgboost_full <- dat$train$images
+X_test_xgboost <- dat$test$images
+X_train_mat <- as.matrix(X_train_xgboost_full)
+
+train_idx_xgboost <- sample(1:nrow(X_train_mat), size = 0.8 * nrow(X_train_mat))
+X_train_xgboost <- X_train_mat[train_idx_xgboost,]
+y_train_xgboost <- dat$train$labels[train_idx_xgboost]
+X_valid_xgboost <- X_train_mat[-train_idx_xgboost,]
+y_valid_xgboost <- dat$train$labels[-train_idx_xgboost]
+
+dtrain <- xgb.DMatrix(data = X_train_xgboost, label = y_train_xgboost)
+dvalid <- xgb.DMatrix(data = X_valid_xgboost, label = y_valid_xgboost)
+
+#The detailed fine tuning procedure is omitted here
+#change eta from 0.1 to 0.05, nrounds 200 to 400
+#The performance of model trained for 400 rounds is similar to that trained for
+#350 rounds
+params <- list(
+  objective = "multi:softmax",
+  num_class = 10,
+  max_depth = 6,
+  eta = 0.05,
+  eval_metric = "merror"
+)
+
+xgb_model <- xgb.train(
+  params = params,
+  data = dtrain,
+  nrounds = 400,
+  watchlist = list(train = dtrain, valid = dvalid),
+  verbose = 1
+)
+
+valid_predictions_xgboost <- predict(xgb_model, dvalid)
+accuracy_xgboost <- mean(valid_predictions_xgboost == y_valid_xgboost)
+cat("Validation Accuracy:", round(accuracy_xgboost * 100, 2), "%\n")
+```
+```{r}
+#The baseline model(Random Forest) validation accuracy: 96.8%
+#The Random Forest + PCA model validation accuracy: 94.4%
+#The Xgboost model validation accuracy: 97.55%
+```
+
+```{r}
+set.seed(10)
+X_train_xgboost_full <- dat$train$images
+X_test_xgboost <- dat$test$images
+X_train_mat <- as.matrix(X_train_xgboost_full)
+
+dtrain_full <- xgb.DMatrix(data = X_train_mat, label = dat$train$labels)
+dtest <- xgb.DMatrix(data = as.matrix(X_test_xgboost))
+
+params <- list(
+  objective = "multi:softmax",
+  num_class = 10,
+  max_depth = 6,
+  eta = 0.05,
+  eval_metric = "merror"
+)
+
+xgb_model_final <- xgb.train(
+  params = params,
+  data = dtrain_full,
+  nrounds = 400,
+  verbose = 1
+)
+
+digit_predictions <- predict(xgb_model_final, dtest)
+```
+
+```{r}
+saveRDS(digit_predictions, file = "digit_predictions.rds")
+```
+
+You will submit:
+
+1. The file `digit_predictions.rds`
+
+2. A quarto file that reproduces your analysis and provides brief explanations for your choices. 
+
+**If your code reproduces the result**, your grade will be your accuracy  rounded up the closest integer. So, for example, if your accuracy is .993 your grade will be 100%. Depending on the distribution of accuracy values, the teaching staff may issue an update about the grading system used.
+
+You will have one opportunities to redo your predictions after you see your accuracy from your first submission.
+
+
+
